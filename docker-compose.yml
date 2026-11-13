@@ -38,11 +38,11 @@ services:
 
   # 3. BACKEND SPRINGBOOT (CONEXIÓN A TELEAULA_DB Y TELEAULA_RBAC)
   backend-springboot:
-    build:
-      context: ./teleaula_back
-      dockerfile: ../docker/springboot/Dockerfile
+    image: eclipse-temurin:25-jre-alpine
     container_name: teleaula_backend
     restart: always
+    working_dir: /app
+    entrypoint: ["java", "-jar", "/app/app.jar"]
     ports:
       - "8083:8080"
     environment:
@@ -70,9 +70,7 @@ services:
 
   # 4. FRONTEND REACT (TELEAULA_FRONT COMPILADO EN NGINX)
   frontend-react:
-    build:
-      context: ./teleaula_front
-      dockerfile: ../docker/react/Dockerfile
+    image: nginx:alpine
     container_name: teleaula_frontend
     restart: always
     ports:
