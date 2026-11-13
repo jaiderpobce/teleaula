@@ -21,7 +21,8 @@ const ICON_MAP = {
   dashboard: '📊'
 };
 
-export default function SubmoduleIcon({ icon, fallback = '📄', style = {} }) {
-  const emoji = ICON_MAP[icon] || fallback;
-  return <span style={{ fontSize: '1.2rem', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', ...style }}>{emoji}</span>;
+export default function SubmoduleIcon({ icon, name, fallback = '📄', style = {}, size }) {
+  const iconKey = icon || name;
+  const emoji = ICON_MAP[iconKey] || fallback;
+  return <span style={{ fontSize: size ? `${size}px` : '1.2rem', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', ...style }}>{emoji}</span>;
 }
