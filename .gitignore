@@ -1,0 +1,35 @@
+# Base de datos local, logs y binarios de Docker
+docker/mariadb/data/
+docker/**/data/
+docker/**/logs/
+docker/**/uploads/
+uploads/
+*.log
+
+# Frontend (Node / React)
+teleaula_front/node_modules/
+teleaula_front/dist/
+teleaula_front/.env.local
+teleaula_front/.env.*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Backend (Java / Maven)
+teleaula_back/target/
+teleaula_back/.mvn/timing.properties
+teleaula_back/.mvn/wrapper/maven-wrapper.jar
+
+# IDE y Editores
+.idea/
+*.iml
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+*.sublime-project
+*.sublime-workspace
+
+# Sistema operativo
+.DS_Store
+Thumbs.db

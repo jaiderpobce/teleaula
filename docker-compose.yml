@@ -1,0 +1,88 @@
+services:
+  # 1. BASE DE DATOS MARIADB CON PERSISTENCIA DE DATOS
+  db-mariadb:
+    image: mariadb:10.11
+    container_name: teleaula_mariadb
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: teleaula_db
+      MYSQL_USER: teleaula_user
+      MYSQL_PASSWORD: teleaula_password
+    ports:
+      - "3318:3306"
+    volumes:
+      - ./docker/mariadb/data:/var/lib/mysql
+      # Scripts de inicialización automática en primer despliegue
+      - ./forma_bd/teleaula_db.sql:/docker-entrypoint-initdb.d/01-teleaula_db.sql:ro
+      - ./forma_bd/teleaula_rbac.sql:/docker-entrypoint-initdb.d/02-teleaula_rbac.sql:ro
+      - ./forma_bd/teleaula_seed.sql:/docker-entrypoint-initdb.d/03-teleaula_seed.sql:ro
+    networks:
+      - teleaula_network
+
+  # 2. PHPMYADMIN PARA GESTIÓN VISUAL DE BASES DE DATOS (teleaula_db y teleaula_rbac)
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: teleaula_phpmyadmin
+    restart: always
+    environment:
+      PMA_HOST: db-mariadb
+      PMA_PORT: 3306
+      UPLOAD_LIMIT: 64M
+    ports:
+      - "8084:80"
+    depends_on:
+      - db-mariadb
+    networks:
+      - teleaula_network
+
+  # 3. BACKEND SPRINGBOOT (CONEXIÓN A TELEAULA_DB Y TELEAULA_RBAC)
+  backend-springboot:
+    build:
+      context: ./teleaula_back
+      dockerfile: ../docker/springboot/Dockerfile
+    container_name: teleaula_backend
+    restart: always
+    ports:
+      - "8083:8080"
+    environment:
+      # Conexión Base de Datos Académica (teleaula_db)
+      SPRING_DATASOURCE_URL: jdbc:mariadb://db-mariadb:3306/teleaula_db?useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: teleaula_user
+      SPRING_DATASOURCE_PASSWORD: teleaula_password
+      # Conexión Base de Datos Seguridad (teleaula_rbac)
+      RBAC_DATASOURCE_URL: jdbc:mariadb://db-mariadb:3306/teleaula_rbac?useSSL=false&allowPublicKeyRetrieval=true
+      RBAC_DATASOURCE_USERNAME: teleaula_user
+      RBAC_DATASOURCE_PASSWORD: teleaula_password
+      # Configuración de Archivos y Tareas (Uploads)
+      UPLOAD_DIR: /app/uploads
+      LOGGING_FILE_PATH: /app/logs
+      LOGGING_FILE_NAME: /app/logs/teleaula_back.log
+    volumes:
+      - ./teleaula_back/target/teleaula_back-1.0.0-SNAPSHOT.jar:/app/app.jar
+      - ./docker/springboot/logs:/app/logs
+      - ./docker/springboot/uploads:/app/uploads
+      - ./docker/springboot/data:/app/data
+    depends_on:
+      - db-mariadb
+    networks:
+      - teleaula_network
+
+  # 4. FRONTEND REACT (TELEAULA_FRONT COMPILADO EN NGINX)
+  frontend-react:
+    build:
+      context: ./teleaula_front
+      dockerfile: ../docker/react/Dockerfile
+    container_name: teleaula_frontend
+    restart: always
+    ports:
+      - "3008:80"
+    volumes:
+      - ./teleaula_front/dist:/usr/share/nginx/html:ro
+      - ./docker/react/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - teleaula_network
+
+networks:
+  teleaula_network:
+    driver: bridge
