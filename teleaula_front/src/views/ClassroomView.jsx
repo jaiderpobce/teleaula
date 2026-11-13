@@ -1,22 +1,44 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
+import SubmoduleIcon from '../components/common/SubmoduleIcon';
 import apiClient from '../services/apiClient';
 
 export default function ClassroomView() {
-  const { user } = useAuth();
+  const { user, getSubmodules } = useAuth();
   const { showSuccess, showError } = useNotification();
+  const dbSubmodules = getSubmodules('/aula');
 
+  const classroomSubmodules = dbSubmodules.length > 0
+    ? dbSubmodules.map(s => ({
+        id: s.ruta.split('/').pop(),
+        label: s.nombre,
+        icono: s.icono,
+        desc: s.descripcion
+      }))
+    : [
+        { id: 'actividades', label: 'Actividades y Tareas', icono: 'task', desc: 'Creación y asignación de tareas con guías PDF' },
+        { id: 'calificaciones', label: 'Calificaciones y Notas', icono: 'grade', desc: 'Registro y asentamiento de notas por sección' },
+        { id: 'clases', label: 'Cargas y Asignaturas', icono: 'school', desc: 'Resumen de clases asignadas y materias' }
+      ];
+
+  const [activeTab, setActiveTab] = useState('actividades');
+
+  // Estados de Clases y Actividades
   const [loads, setLoads] = useState([]);
   const [selectedLoadId, setSelectedLoadId] = useState('');
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [selectedActivity, setSelectedActivity] = useState(null);
+
+  // Paginación
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   // Modales
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isGradeModalOpen, setIsGradeModalOpen] = useState(false);
-  const [selectedActivity, setSelectedActivity] = useState(null);
 
   // Formulario Crear Actividad
   const [newTitle, setNewTitle] = useState('');
@@ -25,7 +47,7 @@ export default function ClassroomView() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [creating, setCreating] = useState(false);
 
-  // Lista de Estudiantes para Calificar
+  // Planilla de Calificaciones
   const [gradeSheet, setGradeSheet] = useState([]);
   const [savingGrades, setSavingGrades] = useState(false);
 
@@ -43,6 +65,8 @@ export default function ClassroomView() {
   // Cargar Actividades
   const fetchActivities = async () => {
     setLoading(true);
+    setSelectedActivity(null);
+    setCurrentPage(1);
     const url = selectedLoadId ? `/api/activities?rspId=${selectedLoadId}` : '/api/activities';
     const res = await apiClient.get(url);
     setLoading(false);
@@ -78,12 +102,11 @@ export default function ClassroomView() {
     const res = await apiClient.post('/api/activities', payload);
     if (res.ok) {
       const actId = res.data.id;
-      // Si seleccionó archivo PDF o guía, subirlo
       if (selectedFile) {
         const formData = new FormData();
         formData.append('file', selectedFile);
         formData.append('idActividad', actId);
-        formData.append('idTipoRecurso', '1'); // Guía PDF
+        formData.append('idTipoRecurso', '1');
         formData.append('nombreRecurso', `Guía: ${newTitle}`);
 
         try {
@@ -96,7 +119,7 @@ export default function ClassroomView() {
         }
       }
 
-      showSuccess('Actividad y tarea publicadas con éxito');
+      showSuccess('Actividad escolar y guía PDF creadas');
       setIsCreateModalOpen(false);
       setNewTitle('');
       setNewDate('');
@@ -108,11 +131,28 @@ export default function ClassroomView() {
     setCreating(false);
   };
 
+  // Eliminar actividad
+  const handleDeleteActivity = async () => {
+    if (!selectedActivity) return;
+    if (!window.confirm(`¿Seguro que desea eliminar la actividad "${selectedActivity.nombreActividad}"?`)) return;
+
+    const res = await apiClient.delete(`/api/activities/${selectedActivity.id}`);
+    if (res.ok) {
+      showSuccess('Actividad eliminada con éxito');
+      setSelectedActivity(null);
+      fetchActivities();
+    } else {
+      showError(res.message);
+    }
+  };
+
   // Abrir planilla de calificaciones
   const handleOpenGradeSheet = async (activity) => {
-    setSelectedActivity(activity);
+    const act = activity || selectedActivity;
+    if (!act) return;
+    setSelectedActivity(act);
     setIsGradeModalOpen(true);
-    const res = await apiClient.get(`/api/grades/activity/${activity.id}`);
+    const res = await apiClient.get(`/api/grades/activity/${act.id}`);
     if (res.ok && Array.isArray(res.data)) {
       setGradeSheet(res.data.map(item => ({
         ...item,
@@ -139,7 +179,7 @@ export default function ClassroomView() {
     const res = await apiClient.post('/api/grades/batch', payload);
     setSavingGrades(false);
     if (res.ok) {
-      showSuccess('Calificaciones asentadas y guardadas correctamente');
+      showSuccess('Calificaciones asentadas correctamente');
       setIsGradeModalOpen(false);
       fetchActivities();
     } else {
@@ -153,210 +193,362 @@ export default function ClassroomView() {
     a.numeroSeccion?.toLowerCase().includes(search.toLowerCase())
   );
 
+  const totalItems = filteredActivities.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedActivities = filteredActivities.slice(startIndex, startIndex + itemsPerPage);
+
+  const currentTabObj = classroomSubmodules.find(s => s.id === activeTab) || classroomSubmodules[0];
+
   return (
     <div style={{
-      maxWidth: '1440px',
-      margin: '0 auto',
-      padding: '24px 20px',
-      minHeight: 'calc(100vh - 65px)',
       display: 'flex',
-      flexDirection: 'column',
-      gap: '20px'
+      flex: 1,
+      minHeight: 'calc(100vh - 65px)',
+      background: 'var(--bg-dark)',
+      padding: '20px 24px',
+      gap: '24px',
+      maxWidth: '1500px',
+      margin: '0 auto',
+      width: '100%'
     }}>
-      {/* HEADER DEL MÓDULO */}
-      <div style={{
+      
+      {/* ========================================================
+          SIDEBAR LATERAL A LA IZQUIERDA (SUBMÓDULOS DE AULA)
+         ======================================================== */}
+      <aside style={{
+        width: '300px',
         background: '#ffffff',
         border: '1px solid var(--panel-border)',
-        borderRadius: '18px',
-        padding: '20px 24px',
+        borderRadius: '20px',
+        padding: '24px 16px',
         boxShadow: 'var(--shadow-main)',
         display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        flexWrap: 'wrap',
-        gap: '16px'
+        flexDirection: 'column',
+        height: 'fit-content'
       }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <span style={{ fontSize: '1.6rem' }}>🏫</span>
-            <h2 style={{ fontFamily: 'Outfit, sans-serif', margin: 0, fontSize: '1.4rem', color: 'var(--text-main)' }}>
-              Aula Virtual & Actividades Escolares
-            </h2>
+        {/* ENCABEZADO DEL SIDEBAR */}
+        <div style={{ padding: '0 10px 18px 10px', borderBottom: '1px solid var(--panel-border)', marginBottom: '16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
+            <span style={{ fontSize: '1.4rem' }}>🏫</span>
+            <h3 style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--google-blue)', margin: 0, fontSize: '1.2rem' }}>
+              Aula Virtual
+            </h3>
           </div>
-          <p style={{ margin: '4px 0 0 0', color: 'var(--text-muted)', fontSize: '0.86rem' }}>
-            Publicación de tareas con guías PDF, recepción de trabajos y asentamiento de notas.
+          <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: 0 }}>
+            Panel docente y gestión de tareas escolares
           </p>
         </div>
 
-        {/* SELECTOR DE CLASE / CARGA DOCENTE */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <label style={{ fontSize: '0.84rem', fontWeight: 700, color: 'var(--text-muted)' }}>
-            Filtrar Asignatura:
+        {/* LISTA DINÁMICA DE SUBMÓDULOS */}
+        <nav style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          {classroomSubmodules.map((sub) => {
+            const isActive = activeTab === sub.id;
+            return (
+              <button
+                key={sub.id}
+                onClick={() => setActiveTab(sub.id)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  width: '100%',
+                  padding: '12px 14px',
+                  borderRadius: '14px',
+                  border: isActive ? '1px solid #c2e7ff' : '1px solid transparent',
+                  background: isActive ? '#e8f0fe' : 'transparent',
+                  color: isActive ? 'var(--google-blue)' : 'var(--text-main)',
+                  fontWeight: isActive ? 700 : 500,
+                  fontSize: '0.88rem',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  transition: 'var(--transition)'
+                }}
+              >
+                <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '24px' }}>
+                  <SubmoduleIcon name={sub.icono} size={19} />
+                </span>
+                <div style={{ flex: 1 }}>
+                  <div>{sub.label}</div>
+                  <div style={{ fontSize: '0.7rem', color: isActive ? 'var(--google-blue-dark)' : 'var(--text-dim)', fontWeight: 400 }}>
+                    {sub.desc}
+                  </div>
+                </div>
+                {isActive && (
+                  <span style={{ color: 'var(--google-blue)', fontSize: '0.9rem', fontWeight: 900 }}>›</span>
+                )}
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* FILTRO DE ASIGNATURA EN EL SIDEBAR */}
+        <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid var(--panel-border)' }}>
+          <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '6px' }}>
+            Filtrar Asignatura / Clase:
           </label>
           <select
             value={selectedLoadId}
             onChange={(e) => setSelectedLoadId(e.target.value)}
             className="pos-input"
             style={{
-              height: '40px',
+              width: '100%',
+              height: '38px',
               borderRadius: '10px',
               border: '1px solid var(--panel-border)',
-              padding: '0 12px',
-              fontSize: '0.86rem',
+              padding: '0 8px',
+              fontSize: '0.82rem',
               fontWeight: 600,
-              background: '#ffffff',
-              minWidth: '260px'
+              background: '#ffffff'
             }}
           >
-            <option value="">Todas las Clases / Asignaturas</option>
+            <option value="">Todas las Clases</option>
             {loads.map(load => (
               <option key={load.id} value={load.id}>
-                {load.numeroSeccion} — {load.nombreMateria} ({load.nombreProfesor})
+                {load.numeroSeccion} — {load.nombreMateria}
               </option>
             ))}
           </select>
-
-          <button
-            onClick={() => setIsCreateModalOpen(true)}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '9px 16px',
-              borderRadius: '12px',
-              border: 'none',
-              background: 'var(--google-blue)',
-              color: '#ffffff',
-              fontWeight: 800,
-              fontSize: '0.86rem',
-              cursor: 'pointer',
-              boxShadow: '0 3px 10px rgba(26, 115, 232, 0.3)'
-            }}
-          >
-            <span>＋</span> Nueva Tarea / Guía
-          </button>
         </div>
-      </div>
 
-      {/* BUSCADOR */}
-      <div style={{ position: 'relative', width: '100%' }}>
-        <span style={{ position: 'absolute', left: '14px', top: '11px', color: 'var(--text-dim)' }}>🔍</span>
-        <input
-          type="text"
-          placeholder="Buscar por título de tarea, materia o sección..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="pos-input"
-          style={{
-            width: '100%',
-            height: '42px',
-            paddingLeft: '40px',
-            paddingRight: '14px',
-            borderRadius: '12px',
-            border: '1px solid var(--panel-border)',
-            fontSize: '0.88rem'
-          }}
-        />
-      </div>
+        {/* PIE DEL SIDEBAR */}
+        <div style={{ marginTop: '24px', paddingTop: '16px', borderTop: '1px solid var(--panel-border)', paddingLeft: '8px' }}>
+          <div style={{ fontSize: '0.72rem', color: 'var(--text-dim)' }}>Base de Datos Conectada:</div>
+          <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#137333', display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
+            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#137333', display: 'inline-block' }}></span>
+            teleaula_db (MariaDB 10.11)
+          </div>
+        </div>
+      </aside>
 
-      {/* GRILLA UNIFORME DE ACTIVIDADES */}
-      <div style={{
+      {/* ========================================================
+          PANEL PRINCIPAL CONTENEDOR SEGÚN EL SUBMÓDULO ACTIVO
+         ======================================================== */}
+      <main style={{
+        flex: 1,
         background: '#ffffff',
         border: '1px solid var(--panel-border)',
-        borderRadius: '18px',
-        padding: '16px',
+        borderRadius: '20px',
+        padding: '28px 32px',
         boxShadow: 'var(--shadow-main)',
-        overflowX: 'auto'
+        minHeight: '600px'
       }}>
-        <table className="pos-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr style={{ background: '#f8f9fa' }}>
-              <th style={{ width: '60px', textAlign: 'center' }}>ID</th>
-              <th>Actividad / Tarea</th>
-              <th>Materia / Asignatura</th>
-              <th style={{ width: '100px', textAlign: 'center' }}>Sección</th>
-              <th>Docente</th>
-              <th style={{ width: '130px', textAlign: 'center' }}>Entrega</th>
-              <th style={{ width: '110px', textAlign: 'center' }}>Puntaje Máx</th>
-              <th style={{ width: '110px', textAlign: 'center' }}>Calificados</th>
-              <th style={{ width: '170px', textAlign: 'center' }}>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr>
-                <td colSpan="9" style={{ textAlign: 'center', padding: '36px', color: 'var(--text-muted)' }}>
-                  ⏳ Cargando actividades y tareas escolares...
-                </td>
-              </tr>
-            ) : filteredActivities.length === 0 ? (
-              <tr>
-                <td colSpan="9" style={{ textAlign: 'center', padding: '36px', color: 'var(--text-muted)' }}>
-                  No se encontraron actividades registradas. Haz clic en "＋ Nueva Tarea / Guía" para programar una.
-                </td>
-              </tr>
-            ) : (
-              filteredActivities.map(act => (
-                <tr key={act.id}>
-                  <td style={{ textAlign: 'center' }} className="code-col">#{act.id}</td>
-                  <td>
-                    <div style={{ fontWeight: 800, color: 'var(--text-main)', fontSize: '0.9rem' }}>
-                      {act.nombreActividad}
-                    </div>
-                    {act.totalRecursos > 0 && (
-                      <span style={{ fontSize: '0.74rem', color: 'var(--google-blue)', display: 'inline-flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
-                        📎 Guía / Documento PDF adjunto
-                      </span>
-                    )}
-                  </td>
-                  <td style={{ fontWeight: 700, color: 'var(--google-blue)' }}>{act.nombreMateria}</td>
-                  <td style={{ textAlign: 'center' }}>
-                    <span style={{ padding: '2px 8px', borderRadius: '6px', background: '#e8f0fe', color: 'var(--google-blue)', fontWeight: 800, fontSize: '0.75rem' }}>
-                      {act.numeroSeccion}
-                    </span>
-                  </td>
-                  <td style={{ fontSize: '0.84rem' }}>{act.nombreProfesor}</td>
-                  <td style={{ textAlign: 'center', fontSize: '0.84rem', fontWeight: 600 }}>
-                    📅 {act.fechaEntrega}
-                  </td>
-                  <td style={{ textAlign: 'center', fontWeight: 800, color: 'var(--google-green)' }}>
-                    {act.puntuacionMax} pts
-                  </td>
-                  <td style={{ textAlign: 'center' }}>
-                    <span style={{ padding: '2px 8px', borderRadius: '6px', background: act.alumnosCalificados > 0 ? '#e6f4ea' : '#f1f3f4', color: act.alumnosCalificados > 0 ? '#137333' : '#5f6368', fontWeight: 700, fontSize: '0.75rem' }}>
-                      {act.alumnosCalificados} alumnos
-                    </span>
-                  </td>
-                  <td style={{ textAlign: 'center' }}>
-                    <button
-                      onClick={() => handleOpenGradeSheet(act)}
+        {/* ENCABEZADO Y BOTONES DE ACCIÓN */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', flexWrap: 'wrap', gap: '12px' }}>
+          <div>
+            <h2 style={{ fontFamily: 'Outfit, sans-serif', color: 'var(--google-blue)', margin: 0, fontSize: '1.4rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <SubmoduleIcon name={currentTabObj.icono} size={24} /> {currentTabObj.label}
+            </h2>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.86rem', margin: '4px 0 0 0' }}>
+              {currentTabObj.desc}
+            </p>
+          </div>
+
+          {/* BOTONERA DINÁMICA UNIFORME */}
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <button
+              onClick={() => setIsCreateModalOpen(true)}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '8px 16px',
+                borderRadius: '12px',
+                border: 'none',
+                background: 'var(--google-blue)',
+                color: '#ffffff',
+                fontSize: '0.86rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                boxShadow: '0 4px 12px rgba(26, 115, 232, 0.25)'
+              }}
+            >
+              <span>＋</span> Nueva Tarea / Guía
+            </button>
+
+            <button
+              onClick={() => handleOpenGradeSheet(selectedActivity)}
+              disabled={!selectedActivity}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '8px 14px',
+                borderRadius: '12px',
+                fontSize: '0.84rem',
+                fontWeight: 700,
+                border: '1px solid ' + (selectedActivity ? 'var(--google-blue)' : 'var(--panel-border)'),
+                background: selectedActivity ? '#e8f0fe' : '#f1f3f4',
+                color: selectedActivity ? 'var(--google-blue)' : '#9aa0a6',
+                cursor: selectedActivity ? 'pointer' : 'not-allowed',
+                transition: 'var(--transition)'
+              }}
+            >
+              <span>📊</span> Calificar Alumnos
+            </button>
+
+            <button
+              onClick={handleDeleteActivity}
+              disabled={!selectedActivity}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '8px 14px',
+                borderRadius: '12px',
+                fontSize: '0.84rem',
+                fontWeight: 700,
+                border: '1px solid ' + (selectedActivity ? '#ea4335' : 'var(--panel-border)'),
+                background: selectedActivity ? '#fce8e6' : '#f1f3f4',
+                color: selectedActivity ? '#c5221f' : '#9aa0a6',
+                cursor: selectedActivity ? 'pointer' : 'not-allowed',
+                transition: 'var(--transition)'
+              }}
+            >
+              <span>🗑️</span> Eliminar
+            </button>
+          </div>
+        </div>
+
+        {/* BARRA INFORMATIVA DE SELECCIÓN */}
+        {selectedActivity && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            background: '#e8f0fe',
+            border: '1px solid #c2e7ff',
+            padding: '8px 16px',
+            borderRadius: '12px',
+            marginBottom: '14px',
+            fontSize: '0.85rem'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <span style={{ fontWeight: 800, color: 'var(--google-blue)' }}>Seleccionado:</span>
+              <span className="code-col" style={{ fontWeight: 700 }}>#{selectedActivity.id}</span>
+              <span style={{ fontWeight: 700 }}>{selectedActivity.nombreActividad}</span>
+              <span style={{ color: 'var(--text-muted)' }}>|</span>
+              <span>{selectedActivity.nombreMateria} ({selectedActivity.numeroSeccion})</span>
+              <span style={{ color: 'var(--text-muted)' }}>|</span>
+              <span>Puntaje: <strong style={{ color: 'var(--google-green)' }}>{selectedActivity.puntuacionMax} pts</strong></span>
+            </div>
+            <button 
+              onClick={() => setSelectedActivity(null)} 
+              style={{ background: 'none', border: 'none', color: 'var(--google-blue)', cursor: 'pointer', fontWeight: 700, fontSize: '0.8rem' }}
+            >
+              ✕ Deseleccionar
+            </button>
+          </div>
+        )}
+
+        {/* BUSCADOR */}
+        <div style={{ position: 'relative', width: '100%', marginBottom: '14px' }}>
+          <span style={{ position: 'absolute', left: '14px', top: '11px', color: 'var(--text-dim)' }}>🔍</span>
+          <input
+            type="text"
+            placeholder="Buscar por título de tarea, materia o sección..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pos-input"
+            style={{ width: '100%', height: '42px', paddingLeft: '40px', borderRadius: '12px', border: '1px solid var(--panel-border)', fontSize: '0.88rem' }}
+          />
+        </div>
+
+        {/* TABLA PRINCIPAL DE ACTIVIDADES */}
+        <div style={{ overflowX: 'auto', border: '1px solid var(--panel-border)', borderRadius: '14px' }}>
+          {loading ? (
+            <div style={{ textAlign: 'center', padding: '36px', color: 'var(--text-muted)' }}>
+              ⏳ Cargando actividades y tareas escolares...
+            </div>
+          ) : paginatedActivities.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '36px', color: 'var(--text-muted)' }}>
+              No se encontraron actividades registradas. Haz clic en "＋ Nueva Tarea / Guía" para programar una.
+            </div>
+          ) : (
+            <table className="pos-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ background: '#f8f9fa' }}>
+                  <th style={{ width: '50px', textAlign: 'center' }}>ID</th>
+                  <th>Actividad / Tarea</th>
+                  <th>Materia / Asignatura</th>
+                  <th style={{ width: '100px', textAlign: 'center' }}>Sección</th>
+                  <th>Docente</th>
+                  <th style={{ width: '120px', textAlign: 'center' }}>Entrega</th>
+                  <th style={{ width: '110px', textAlign: 'center' }}>Escala Máx</th>
+                  <th style={{ width: '110px', textAlign: 'center' }}>Calificados</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginatedActivities.map((act) => {
+                  const isSelected = selectedActivity?.id === act.id;
+                  return (
+                    <tr
+                      key={act.id}
+                      onClick={() => setSelectedActivity(isSelected ? null : act)}
                       style={{
-                        padding: '6px 12px',
-                        borderRadius: '8px',
-                        border: '1px solid var(--google-blue)',
-                        background: '#e8f0fe',
-                        color: 'var(--google-blue)',
-                        fontWeight: 700,
-                        fontSize: '0.8rem',
-                        cursor: 'pointer'
+                        cursor: 'pointer',
+                        background: isSelected ? '#e8f0fe' : 'transparent',
+                        transition: 'background 0.15s ease'
                       }}
                     >
-                      📊 Calificar
-                    </button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+                      <td style={{ textAlign: 'center' }} className="code-col">#{act.id}</td>
+                      <td>
+                        <div style={{ fontWeight: 800, color: 'var(--text-main)', fontSize: '0.88rem' }}>
+                          {act.nombreActividad}
+                        </div>
+                        {act.totalRecursos > 0 && (
+                          <span style={{ fontSize: '0.72rem', color: 'var(--google-blue)', display: 'inline-flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
+                            📎 Guía PDF adjunta
+                          </span>
+                        )}
+                      </td>
+                      <td style={{ fontWeight: 700, color: 'var(--google-blue)' }}>{act.nombreMateria}</td>
+                      <td style={{ textAlign: 'center' }}>
+                        <span style={{ padding: '2px 8px', borderRadius: '6px', background: '#e8f0fe', color: 'var(--google-blue)', fontWeight: 800, fontSize: '0.74rem' }}>
+                          {act.numeroSeccion}
+                        </span>
+                      </td>
+                      <td style={{ fontSize: '0.84rem' }}>{act.nombreProfesor}</td>
+                      <td style={{ textAlign: 'center', fontSize: '0.82rem', fontWeight: 600 }}>
+                        📅 {act.fechaEntrega}
+                      </td>
+                      <td style={{ textAlign: 'center', fontWeight: 800, color: 'var(--google-green)' }}>
+                        {act.puntuacionMax} pts
+                      </td>
+                      <td style={{ textAlign: 'center' }}>
+                        <span style={{ padding: '2px 8px', borderRadius: '6px', background: act.alumnosCalificados > 0 ? '#e6f4ea' : '#f1f3f4', color: act.alumnosCalificados > 0 ? '#137333' : '#5f6368', fontWeight: 700, fontSize: '0.74rem' }}>
+                          {act.alumnosCalificados} alumnos
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+        </div>
 
-      {/* MODAL CREAR NUEVA ACTIVIDAD / TAREA CON PDF */}
+        {/* PAGINACIÓN */}
+        {!loading && totalItems > 0 && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '14px', padding: '8px 4px', fontSize: '0.84rem' }}>
+            <div style={{ color: 'var(--text-muted)' }}>
+              Mostrando <strong>{startIndex + 1}</strong> a <strong>{Math.min(startIndex + itemsPerPage, totalItems)}</strong> de <strong>{totalItems}</strong> tareas
+            </div>
+            <div style={{ display: 'flex', gap: '6px' }}>
+              <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="btn-secondary" style={{ padding: '4px 10px', fontSize: '0.78rem' }}>Anterior</button>
+              <span style={{ padding: '4px 8px', fontWeight: 700 }}>{currentPage} / {totalPages}</span>
+              <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="btn-secondary" style={{ padding: '4px 10px', fontSize: '0.78rem' }}>Siguiente</button>
+            </div>
+          </div>
+        )}
+      </main>
+
+      {/* MODAL CREAR NUEVA ACTIVIDAD CON PDF */}
       {isCreateModalOpen && (
         <div className="modal-overlay" onClick={() => setIsCreateModalOpen(false)}>
           <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '520px' }}>
             <div className="modal-header">
-              <h3 style={{ margin: 0, fontFamily: 'Outfit, sans-serif', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <h3 style={{ margin: 0, fontFamily: 'Outfit, sans-serif' }}>
                 <span>📝</span> Publicar Actividad / Tarea
               </h3>
               <button onClick={() => setIsCreateModalOpen(false)} style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer' }}>✕</button>
@@ -440,9 +632,6 @@ export default function ClassroomView() {
                   onChange={e => setSelectedFile(e.target.files[0])}
                   style={{ width: '100%', fontSize: '0.82rem' }}
                 />
-                <div style={{ fontSize: '0.72rem', color: 'var(--text-dim)', marginTop: '4px' }}>
-                  Formatos soportados: PDF, Word, PowerPoint (Máx 50MB)
-                </div>
               </div>
 
               <div className="modal-actions" style={{ marginTop: '10px' }}>
@@ -504,7 +693,6 @@ export default function ClassroomView() {
                             min="0"
                             max={selectedActivity.puntuacionMax}
                             step="0.5"
-                            placeholder="0.00"
                             value={item.tempCalificacion}
                             onChange={(e) => {
                               const val = e.target.value;

@@ -37,6 +37,7 @@ export default function AppRoutes() {
 
       {/* 3. MÓDULO REPOSITORIO */}
       <Route path="/repositorio" element={<ProtectedRoute route="/repositorio"><RepositoryView /></ProtectedRoute>} />
+      <Route path="/repositorio/*" element={<ProtectedRoute route="/repositorio"><RepositoryView /></ProtectedRoute>} />
 
       {/* 4. MÓDULO CONFIGURACIÓN & SEGURIDAD RBAC */}
       <Route path="/sistema" element={<ProtectedRoute route="/sistema"><SystemView /></ProtectedRoute>} />

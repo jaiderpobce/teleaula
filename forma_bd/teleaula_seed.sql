@@ -76,6 +76,10 @@ INSERT INTO `vistas` (`id`, `id_modulo`, `nombre_vista`, `icono`, `ruta_acceso`,
 
 -- MÓDULO 3: REPOSITORIO DIGITAL
 (3, 3, 'Biblioteca y Recursos', 'folder_shared', '/repositorio', 'Repositorio central de documentos y recursos educativos', 0, 1),
+(30, 3, 'Todos los Recursos', 'folder_open', '/repositorio/todos', 'Colección completa de archivos y materiales', 1, 1),
+(31, 3, 'Guías y Tareas en PDF', 'picture_as_pdf', '/repositorio/guias', 'Guías de estudio y material en PDF', 2, 1),
+(32, 3, 'Lecturas y Libros', 'menu_book', '/repositorio/lecturas', 'Libros de texto y lecturas recomendadas', 3, 1),
+(33, 3, 'Formatos Institucionales', 'description', '/repositorio/formatos', 'Formatos administrativos y actas de secretaría', 4, 1),
 
 -- MÓDULO 4: CONFIGURACIÓN Y SEGURIDAD
 (4, 4, 'Ajustes de Seguridad', 'settings', '/sistema', 'Dashboard de configuración y accesos', 0, 1),
