@@ -1,6 +1,7 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import LandingPageView from '../views/LandingPageView';
 import LoginView from '../views/LoginView';
 import ClassroomView from '../views/ClassroomView';
 import SchoolManagementView from '../views/SchoolManagementView';
@@ -23,9 +24,12 @@ export default function AppRoutes() {
 
   return (
     <Routes>
-      <Route path="/login" element={<LoginView />} />
+      {/* 0. LANDING PAGE INSTITUCIONAL */}
+      <Route path="/" element={<LandingPageView />} />
+      <Route path="/inicio" element={<LandingPageView />} />
 
-      <Route path="/" element={<Navigate to={isAuthenticated ? "/aula" : "/login"} replace />} />
+      {/* LOGIN DEL SISTEMA */}
+      <Route path="/login" element={isAuthenticated ? <Navigate to="/aula" replace /> : <LoginView />} />
       
       {/* 1. MÓDULO AULA VIRTUAL */}
       <Route path="/aula" element={<ProtectedRoute route="/aula"><ClassroomView /></ProtectedRoute>} />
@@ -43,7 +47,7 @@ export default function AppRoutes() {
       <Route path="/sistema" element={<ProtectedRoute route="/sistema"><SystemView /></ProtectedRoute>} />
       <Route path="/sistema/*" element={<ProtectedRoute route="/sistema"><SystemView /></ProtectedRoute>} />
 
-      <Route path="*" element={<Navigate to={isAuthenticated ? "/aula" : "/login"} replace />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }

@@ -54,6 +54,25 @@ export default function LoginView() {
         border: '1px solid var(--panel-border)',
         padding: '36px 32px'
       }}>
+        <button
+          onClick={() => navigate('/')}
+          style={{
+            background: 'none',
+            border: 'none',
+            color: 'var(--google-blue)',
+            fontSize: '0.84rem',
+            fontWeight: 700,
+            cursor: 'pointer',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            marginBottom: '14px',
+            padding: 0
+          }}
+        >
+          ← Volver al Portal Institucional
+        </button>
+
         {/* LOGO INSTITUCIONAL */}
         <div style={{ textAlign: 'center', marginBottom: '28px' }}>
           <div style={{
