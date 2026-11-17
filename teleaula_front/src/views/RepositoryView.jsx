@@ -635,8 +635,8 @@ export default function RepositoryView() {
           MODAL SUBIR DOCUMENTO
          ======================================================== */}
       {isUploadModalOpen && (
-        <div className="modal-overlay" onClick={() => setIsUploadModalOpen(false)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '500px' }}>
+        <div className="modal-overlay active" onClick={() => setIsUploadModalOpen(false)} style={{ zIndex: 1100 }}>
+          <div className="modal-box" onClick={e => e.stopPropagation()} style={{ maxWidth: '500px' }}>
             <div className="modal-header">
               <h3 style={{ margin: 0, fontFamily: 'Outfit, sans-serif' }}>
                 <span>⬆️</span> Subir Documento al Repositorio

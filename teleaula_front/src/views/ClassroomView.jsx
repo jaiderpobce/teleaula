@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
 import SubmoduleIcon from '../components/common/SubmoduleIcon';
@@ -26,6 +27,7 @@ export default function ClassroomView() {
 
   // Estados de Clases y Actividades
   const [loads, setLoads] = useState([]);
+  const [loadingLoads, setLoadingLoads] = useState(true);
   const [selectedLoadId, setSelectedLoadId] = useState('');
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -49,17 +51,25 @@ export default function ClassroomView() {
 
   // Planilla de Calificaciones
   const [gradeSheet, setGradeSheet] = useState([]);
+  const [loadingGrades, setLoadingGrades] = useState(false);
   const [savingGrades, setSavingGrades] = useState(false);
 
   // Cargar Cargas Académicas (RSP)
   const fetchLoads = async () => {
+    setLoadingLoads(true);
     const res = await apiClient.get('/api/academic-loads');
     if (res.ok && Array.isArray(res.data)) {
       setLoads(res.data);
       if (res.data.length > 0 && !selectedLoadId) {
         setSelectedLoadId(res.data[0].id.toString());
       }
+    } else {
+      setLoads([]);
+      if (!res.ok) {
+        showError(res.message || 'No se pudieron cargar las cargas académicas');
+      }
     }
+    setLoadingLoads(false);
   };
 
   // Cargar Actividades
@@ -72,6 +82,11 @@ export default function ClassroomView() {
     setLoading(false);
     if (res.ok && Array.isArray(res.data)) {
       setActivities(res.data);
+    } else {
+      setActivities([]);
+      if (!res.ok) {
+        showError(res.message || 'No se pudieron cargar las actividades');
+      }
     }
   };
 
@@ -86,49 +101,64 @@ export default function ClassroomView() {
   // Manejo de creación de actividad
   const handleCreateActivity = async (e) => {
     e.preventDefault();
-    if (!selectedLoadId || !newTitle || !newDate) {
+    const title = newTitle.trim();
+    const score = Number(newScore);
+    if (!selectedLoadId || !title || !newDate || !Number.isFinite(score) || score < 1 || score > 100) {
       showError('Todos los campos requeridos deben completarse');
       return;
     }
 
     setCreating(true);
-    const payload = {
-      idRsp: selectedLoadId,
-      nombreActividad: newTitle,
-      fechaEntrega: newDate,
-      puntuacionMax: newScore
-    };
+    try {
+      const payload = {
+        idRsp: selectedLoadId,
+        nombreActividad: title,
+        fechaEntrega: newDate,
+        puntuacionMax: score
+      };
 
-    const res = await apiClient.post('/api/activities', payload);
-    if (res.ok) {
-      const actId = res.data.id;
+      const res = await apiClient.post('/api/activities', payload);
+      if (!res.ok) {
+        showError(res.message || 'Error al crear la actividad');
+        return;
+      }
+
+      let uploadError = '';
       if (selectedFile) {
         const formData = new FormData();
         formData.append('file', selectedFile);
-        formData.append('idActividad', actId);
+        formData.append('idActividad', res.data.id);
         formData.append('idTipoRecurso', '1');
-        formData.append('nombreRecurso', `Guía: ${newTitle}`);
+        formData.append('nombreRecurso', `Guía: ${title}`);
 
         try {
-          await fetch('/api/resources/upload', {
+          const uploadResponse = await fetch('/api/resources/upload', {
             method: 'POST',
             body: formData
           });
+          if (!uploadResponse.ok) {
+            const uploadResult = await uploadResponse.json().catch(() => null);
+            throw new Error(uploadResult?.message || `Error HTTP ${uploadResponse.status}`);
+          }
         } catch (uploadErr) {
-          console.warn('Error al subir PDF:', uploadErr);
+          uploadError = uploadErr instanceof Error ? uploadErr.message : 'Error desconocido';
         }
       }
 
-      showSuccess('Actividad escolar y guía PDF creadas');
+      if (uploadError) {
+        showError(`La tarea se creó, pero no se pudo adjuntar el archivo: ${uploadError}`);
+      } else {
+        showSuccess(selectedFile ? 'Actividad y guía creadas correctamente' : 'Actividad creada correctamente');
+      }
       setIsCreateModalOpen(false);
       setNewTitle('');
       setNewDate('');
+      setNewScore(20);
       setSelectedFile(null);
       fetchActivities();
-    } else {
-      showError(res.message || 'Error al crear la actividad');
+    } finally {
+      setCreating(false);
     }
-    setCreating(false);
   };
 
   // Eliminar actividad
@@ -151,39 +181,69 @@ export default function ClassroomView() {
     const act = activity || selectedActivity;
     if (!act) return;
     setSelectedActivity(act);
+    setGradeSheet([]);
     setIsGradeModalOpen(true);
-    const res = await apiClient.get(`/api/grades/activity/${act.id}`);
-    if (res.ok && Array.isArray(res.data)) {
-      setGradeSheet(res.data.map(item => ({
-        ...item,
-        tempCalificacion: item.calificacion !== null ? item.calificacion : '',
-        tempComentario: item.comentario || ''
-      })));
+    setLoadingGrades(true);
+    try {
+      const res = await apiClient.get(`/api/grades/activity/${act.id}`);
+      if (res.ok && Array.isArray(res.data)) {
+        setGradeSheet(res.data.map(item => ({
+          ...item,
+          tempCalificacion: item.calificacion !== null ? item.calificacion : '',
+          tempComentario: item.comentario || ''
+        })));
+      } else {
+        showError(res.message || 'No se pudo cargar la lista de estudiantes');
+      }
+    } finally {
+      setLoadingGrades(false);
     }
   };
 
   // Guardar calificaciones
   const handleSaveGrades = async () => {
     if (!selectedActivity) return;
-    setSavingGrades(true);
 
+    const gradesToSave = gradeSheet
+      .filter(item => item.tempCalificacion !== '' && item.tempCalificacion !== null)
+      .map(item => ({ ...item, score: Number(item.tempCalificacion) }));
+    const invalidGrade = gradesToSave.some(item =>
+      !Number.isFinite(item.score) ||
+      item.score < 0 ||
+      item.score > Number(selectedActivity.puntuacionMax) ||
+      !Number.isInteger(item.score * 2)
+    );
+
+    if (gradesToSave.length === 0) {
+      showError('Ingresa al menos una calificación antes de guardar');
+      return;
+    }
+    if (invalidGrade) {
+      showError(`Las calificaciones deben estar entre 0 y ${selectedActivity.puntuacionMax}, en incrementos de 0.5`);
+      return;
+    }
+
+    setSavingGrades(true);
     const payload = {
       idActividad: selectedActivity.id,
-      grades: gradeSheet.map(item => ({
+      grades: gradesToSave.map(item => ({
         idAlumno: item.idAlumno,
-        calificacion: item.tempCalificacion,
+        calificacion: item.score,
         comentario: item.tempComentario
       }))
     };
 
-    const res = await apiClient.post('/api/grades/batch', payload);
-    setSavingGrades(false);
-    if (res.ok) {
-      showSuccess('Calificaciones asentadas correctamente');
-      setIsGradeModalOpen(false);
-      fetchActivities();
-    } else {
-      showError(res.message || 'Error al guardar notas');
+    try {
+      const res = await apiClient.post('/api/grades/batch', payload);
+      if (res.ok) {
+        showSuccess('Calificaciones asentadas correctamente');
+        setIsGradeModalOpen(false);
+        fetchActivities();
+      } else {
+        showError(res.message || 'Error al guardar notas');
+      }
+    } finally {
+      setSavingGrades(false);
     }
   };
 
@@ -545,8 +605,8 @@ export default function ClassroomView() {
 
       {/* MODAL CREAR NUEVA ACTIVIDAD CON PDF */}
       {isCreateModalOpen && (
-        <div className="modal-overlay" onClick={() => setIsCreateModalOpen(false)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '520px' }}>
+        <div className="modal-overlay active" onClick={() => setIsCreateModalOpen(false)} style={{ zIndex: 1100 }}>
+          <div className="modal-box" onClick={e => e.stopPropagation()} style={{ maxWidth: '520px' }}>
             <div className="modal-header">
               <h3 style={{ margin: 0, fontFamily: 'Outfit, sans-serif' }}>
                 <span>📝</span> Publicar Actividad / Tarea
@@ -555,6 +615,15 @@ export default function ClassroomView() {
             </div>
 
             <form onSubmit={handleCreateActivity} style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              {!loadingLoads && loads.length === 0 && (
+                <div role="alert" style={{ padding: '12px 14px', borderRadius: '10px', background: '#fef7e0', color: '#5f4700', fontSize: '0.84rem' }}>
+                  Para publicar una tarea primero registra docentes, materias, secciones y una carga académica en{' '}
+                  <Link to="/escolar" style={{ color: 'var(--google-blue)', fontWeight: 700 }}>
+                    Gestión Escolar
+                  </Link>
+                  .
+                </div>
+              )}
               <div>
                 <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '4px' }}>
                   Asignatura / Sección *
@@ -563,10 +632,13 @@ export default function ClassroomView() {
                   value={selectedLoadId}
                   onChange={e => setSelectedLoadId(e.target.value)}
                   required
+                  disabled={loadingLoads || loads.length === 0}
                   className="pos-input"
                   style={{ width: '100%', height: '40px', borderRadius: '10px', border: '1px solid var(--panel-border)', padding: '0 10px', fontSize: '0.86rem' }}
                 >
-                  <option value="">Seleccione Asignatura...</option>
+                  <option value="">
+                    {loadingLoads ? 'Cargando asignaturas...' : loads.length === 0 ? 'No hay cargas académicas disponibles' : 'Seleccione Asignatura...'}
+                  </option>
                   {loads.map(load => (
                     <option key={load.id} value={load.id}>
                       {load.numeroSeccion} — {load.nombreMateria} ({load.nombreProfesor})
@@ -638,7 +710,7 @@ export default function ClassroomView() {
                 <button type="button" onClick={() => setIsCreateModalOpen(false)} className="btn-secondary">
                   Cancelar
                 </button>
-                <button type="submit" disabled={creating} className="btn-primary">
+                <button type="submit" disabled={creating || loadingLoads || loads.length === 0} className="btn-primary">
                   {creating ? 'Guardando...' : 'Publicar Tarea'}
                 </button>
               </div>
@@ -649,8 +721,8 @@ export default function ClassroomView() {
 
       {/* MODAL PLANILLA DE CALIFICACIONES Y NOTAS */}
       {isGradeModalOpen && selectedActivity && (
-        <div className="modal-overlay" onClick={() => setIsGradeModalOpen(false)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '850px', maxHeight: '90vh' }}>
+        <div className="modal-overlay active" onClick={() => setIsGradeModalOpen(false)} style={{ zIndex: 1100 }}>
+          <div className="modal-box" onClick={e => e.stopPropagation()} style={{ maxWidth: '850px', maxHeight: '90vh' }}>
             <div className="modal-header">
               <div>
                 <h3 style={{ margin: 0, fontFamily: 'Outfit, sans-serif', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -678,7 +750,15 @@ export default function ClassroomView() {
                   {gradeSheet.length === 0 ? (
                     <tr>
                       <td colSpan="5" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>
-                        No hay alumnos inscritos en esta sección.
+                        {loadingGrades ? 'Cargando estudiantes...' : (
+                          <>
+                            No hay alumnos inscritos en esta sección. Registra estudiantes e inscríbelos desde{' '}
+                            <Link to="/escolar" style={{ color: 'var(--google-blue)', fontWeight: 700 }}>
+                              Gestión Escolar
+                            </Link>
+                            {' '}→ Matrícula e Inscripciones.
+                          </>
+                        )}
                       </td>
                     </tr>
                   ) : (
@@ -735,7 +815,7 @@ export default function ClassroomView() {
               <button onClick={() => setIsGradeModalOpen(false)} className="btn-secondary">
                 Cerrar
               </button>
-              <button onClick={handleSaveGrades} disabled={savingGrades || gradeSheet.length === 0} className="btn-primary">
+              <button onClick={handleSaveGrades} disabled={savingGrades || loadingGrades || gradeSheet.length === 0} className="btn-primary">
                 {savingGrades ? 'Guardando Notas...' : '💾 Guardar Calificaciones'}
               </button>
             </div>

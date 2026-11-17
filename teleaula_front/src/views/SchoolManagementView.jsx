@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
 import SubmoduleIcon from '../components/common/SubmoduleIcon';
@@ -7,6 +8,8 @@ import apiClient from '../services/apiClient';
 export default function SchoolManagementView() {
   const { user, getSubmodules } = useAuth();
   const { showSuccess, showError } = useNotification();
+  const location = useLocation();
+  const navigate = useNavigate();
   const dbSubmodules = getSubmodules('/escolar');
 
   // Submódulos dinámicos leídos de teleaula_rbac.vistas
@@ -26,7 +29,33 @@ export default function SchoolManagementView() {
         { id: 'inscripciones', label: 'Matrícula e Inscripción', icono: 'how_to_reg', desc: 'Control formal de matrícula por lapso' }
       ];
 
-  const [activeTab, setActiveTab] = useState('alumnos');
+  const getInitialTab = () => {
+    const path = window.location.pathname;
+    if (path.includes('/profesores') || path.includes('/docentes')) return 'profesores';
+    if (path.includes('/materias')) return 'materias';
+    if (path.includes('/secciones')) return 'secciones';
+    if (path.includes('/carga')) return 'cargas';
+    if (path.includes('/inscripciones')) return 'inscripciones';
+    return 'alumnos';
+  };
+
+  const [activeTab, setActiveTab] = useState(getInitialTab);
+
+  useEffect(() => {
+    const path = location.pathname;
+    if (path.includes('/profesores') || path.includes('/docentes')) setActiveTab('profesores');
+    else if (path.includes('/materias')) setActiveTab('materias');
+    else if (path.includes('/secciones')) setActiveTab('secciones');
+    else if (path.includes('/carga')) setActiveTab('cargas');
+    else if (path.includes('/inscripciones')) setActiveTab('inscripciones');
+    else if (path.endsWith('/escolar') || path.endsWith('/escolar/alumnos')) setActiveTab('alumnos');
+  }, [location.pathname]);
+
+  const handleTabClick = (tabId) => {
+    setActiveTab(tabId);
+    const routeSuffix = tabId === 'cargas' ? 'carga-academica' : tabId;
+    navigate(`/escolar/${routeSuffix}`, { replace: true });
+  };
 
   // Datos
   const [dataList, setDataList] = useState([]);
@@ -42,8 +71,9 @@ export default function SchoolManagementView() {
   const [subjects, setSubjects] = useState([]);
   const [sections, setSections] = useState([]);
 
-  // Modales
+  // Modales y Edición
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({});
 
   const fetchTabContent = async () => {
@@ -85,7 +115,16 @@ export default function SchoolManagementView() {
   };
 
   const handleOpenCreateModal = () => {
+    setIsEditing(false);
     setFormData({});
+    loadDependencies();
+    setIsModalOpen(true);
+  };
+
+  const handleOpenEditModal = () => {
+    if (!selectedItem) return;
+    setIsEditing(true);
+    setFormData({ ...selectedItem });
     loadDependencies();
     setIsModalOpen(true);
   };
@@ -99,13 +138,52 @@ export default function SchoolManagementView() {
     else if (activeTab === 'cargas') endpoint = '/api/academic-loads';
     else if (activeTab === 'inscripciones') endpoint = '/api/enrollments';
 
-    const res = await apiClient.post(endpoint, formData);
+    let res;
+    if (isEditing && selectedItem) {
+      res = await apiClient.put(`${endpoint}/${selectedItem.id}`, formData);
+    } else {
+      res = await apiClient.post(endpoint, formData);
+    }
+
     if (res.ok) {
-      showSuccess(res.message || 'Registro exitoso');
+      showSuccess(res.message || (isEditing ? 'Actualización exitosa' : 'Registro exitoso'));
       setIsModalOpen(false);
       fetchTabContent();
     } else {
       showError(res.message || 'Error al guardar');
+    }
+  };
+
+  const getActionLabel = () => {
+    switch (activeTab) {
+      case 'profesores': return 'Crear Docente';
+      case 'alumnos': return 'Crear Estudiante';
+      case 'materias': return 'Crear Materia';
+      case 'secciones': return 'Crear Sección';
+      case 'cargas': return 'Asignar Carga';
+      case 'inscripciones': return 'Nueva Matrícula';
+      default: return 'Nuevo Registro';
+    }
+  };
+
+  const getModalTitle = () => {
+    if (isEditing) {
+      switch (activeTab) {
+        case 'profesores': return `✏️ Editar Docente (#${selectedItem?.id})`;
+        case 'alumnos': return `✏️ Editar Estudiante (#${selectedItem?.id})`;
+        case 'materias': return `✏️ Editar Materia (#${selectedItem?.id})`;
+        case 'secciones': return `✏️ Editar Sección (#${selectedItem?.id})`;
+        default: return `✏️ Editar Registro: ${currentTabObj.label}`;
+      }
+    }
+    switch (activeTab) {
+      case 'profesores': return '＋ Crear Nuevo Docente';
+      case 'alumnos': return '＋ Registrar Estudiante';
+      case 'materias': return '＋ Registrar Materia';
+      case 'secciones': return '＋ Registrar Sección';
+      case 'cargas': return '＋ Asignar Carga Académica';
+      case 'inscripciones': return '＋ Formalizar Matrícula';
+      default: return `＋ Nuevo Registro: ${currentTabObj.label}`;
     }
   };
 
@@ -204,7 +282,7 @@ export default function SchoolManagementView() {
             return (
               <button
                 key={sub.id}
-                onClick={() => setActiveTab(sub.id)}
+                onClick={() => handleTabClick(sub.id)}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -278,6 +356,8 @@ export default function SchoolManagementView() {
           {/* BOTONERA DINÁMICA UNIFORME */}
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
             <button
+              id={activeTab === 'profesores' ? 'btn-crear-docente' : undefined}
+              data-testid={activeTab === 'profesores' ? 'btn-crear-docente' : 'btn-nuevo-registro'}
               onClick={handleOpenCreateModal}
               style={{
                 display: 'inline-flex',
@@ -294,8 +374,31 @@ export default function SchoolManagementView() {
                 boxShadow: '0 4px 12px rgba(26, 115, 232, 0.25)'
               }}
             >
-              <span>＋</span> Nuevo Registro
+              <span>＋</span> {getActionLabel()}
             </button>
+
+            {['profesores', 'alumnos', 'materias', 'secciones'].includes(activeTab) && (
+              <button
+                onClick={handleOpenEditModal}
+                disabled={!selectedItem}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '8px 14px',
+                  borderRadius: '12px',
+                  fontSize: '0.84rem',
+                  fontWeight: 700,
+                  border: '1px solid ' + (selectedItem ? 'var(--google-blue)' : 'var(--panel-border)'),
+                  background: selectedItem ? '#e8f0fe' : '#f1f3f4',
+                  color: selectedItem ? 'var(--google-blue)' : '#9aa0a6',
+                  cursor: selectedItem ? 'pointer' : 'not-allowed',
+                  transition: 'var(--transition)'
+                }}
+              >
+                <span>✏️</span> Editar
+              </button>
+            )}
 
             <button
               onClick={handleDeleteItem}
@@ -370,7 +473,7 @@ export default function SchoolManagementView() {
             </div>
           ) : paginatedData.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '36px', color: 'var(--text-muted)' }}>
-              No se encontraron registros. Haz clic en "＋ Nuevo Registro" para agregar el primero.
+              No se encontraron registros. Haz clic en "＋ {getActionLabel()}" para agregar el primero.
             </div>
           ) : (
             <table className="pos-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -541,11 +644,11 @@ export default function SchoolManagementView() {
 
       {/* MODAL CREACIÓN DINÁMICA */}
       {isModalOpen && (
-        <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '480px' }}>
+        <div className="modal-overlay active" onClick={() => setIsModalOpen(false)} style={{ zIndex: 1100 }}>
+          <div className="modal-box" onClick={e => e.stopPropagation()} style={{ maxWidth: '480px' }} data-testid={activeTab === 'profesores' ? 'modal-docente' : 'modal-gestion'}>
             <div className="modal-header">
               <h3 style={{ margin: 0, fontFamily: 'Outfit, sans-serif' }}>
-                ＋ Nuevo Registro: {currentTabObj.label}
+                {getModalTitle()}
               </h3>
               <button onClick={() => setIsModalOpen(false)} style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer' }}>✕</button>
             </div>
@@ -555,7 +658,7 @@ export default function SchoolManagementView() {
                 <>
                   <div>
                     <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '4px' }}>Nombre Completo *</label>
-                    <input type="text" required value={formData.nombreCompleto || ''} onChange={e => setFormData({ ...formData, nombreCompleto: e.target.value })} className="pos-input" style={{ width: '100%', height: '38px', borderRadius: '8px', border: '1px solid var(--panel-border)', padding: '0 10px' }} />
+                    <input type="text" required placeholder="Ej. Juan Pérez" value={formData.nombreCompleto || ''} onChange={e => setFormData({ ...formData, nombreCompleto: e.target.value })} className="pos-input" style={{ width: '100%', height: '38px', borderRadius: '8px', border: '1px solid var(--panel-border)', padding: '0 10px' }} />
                   </div>
                   <div>
                     <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '4px' }}>Cédula / Documento *</label>
@@ -563,7 +666,7 @@ export default function SchoolManagementView() {
                   </div>
                   <div>
                     <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '4px' }}>Correo Electrónico *</label>
-                    <input type="email" required value={formData.correoElectronico || ''} onChange={e => setFormData({ ...formData, correoElectronico: e.target.value })} className="pos-input" style={{ width: '100%', height: '38px', borderRadius: '8px', border: '1px solid var(--panel-border)', padding: '0 10px' }} />
+                    <input type="email" required placeholder="juan.perez@teleaula.edu" value={formData.correoElectronico || ''} onChange={e => setFormData({ ...formData, correoElectronico: e.target.value })} className="pos-input" style={{ width: '100%', height: '38px', borderRadius: '8px', border: '1px solid var(--panel-border)', padding: '0 10px' }} />
                   </div>
                 </>
               )}
@@ -572,15 +675,38 @@ export default function SchoolManagementView() {
                 <>
                   <div>
                     <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '4px' }}>Nombre Completo *</label>
-                    <input type="text" required value={formData.nombreCompleto || ''} onChange={e => setFormData({ ...formData, nombreCompleto: e.target.value })} className="pos-input" style={{ width: '100%', height: '38px', borderRadius: '8px', border: '1px solid var(--panel-border)', padding: '0 10px' }} />
+                    <input 
+                      type="text" 
+                      required 
+                      placeholder="Ej. Prof. Carlos Mendoza" 
+                      value={formData.nombreCompleto || ''} 
+                      onChange={e => setFormData({ ...formData, nombreCompleto: e.target.value })} 
+                      className="pos-input" 
+                      style={{ width: '100%', height: '38px', borderRadius: '8px', border: '1px solid var(--panel-border)', padding: '0 10px' }} 
+                    />
                   </div>
                   <div>
-                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '4px' }}>Cédula *</label>
-                    <input type="text" required placeholder="V-12345678" value={formData.cedula || ''} onChange={e => setFormData({ ...formData, cedula: e.target.value })} className="pos-input" style={{ width: '100%', height: '38px', borderRadius: '8px', border: '1px solid var(--panel-border)', padding: '0 10px' }} />
+                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '4px' }}>Cédula / Identificación *</label>
+                    <input 
+                      type="text" 
+                      required 
+                      placeholder="Ej. V-12345678" 
+                      value={formData.cedula || ''} 
+                      onChange={e => setFormData({ ...formData, cedula: e.target.value })} 
+                      className="pos-input" 
+                      style={{ width: '100%', height: '38px', borderRadius: '8px', border: '1px solid var(--panel-border)', padding: '0 10px' }} 
+                    />
                   </div>
                   <div>
-                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '4px' }}>Especialidad</label>
-                    <input type="text" placeholder="Ej. Biología, Informática" value={formData.especialidad || ''} onChange={e => setFormData({ ...formData, especialidad: e.target.value })} className="pos-input" style={{ width: '100%', height: '38px', borderRadius: '8px', border: '1px solid var(--panel-border)', padding: '0 10px' }} />
+                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '4px' }}>Especialidad / Área Académica</label>
+                    <input 
+                      type="text" 
+                      placeholder="Ej. Biología, Matemáticas, Ciencias Sociales" 
+                      value={formData.especialidad || ''} 
+                      onChange={e => setFormData({ ...formData, especialidad: e.target.value })} 
+                      className="pos-input" 
+                      style={{ width: '100%', height: '38px', borderRadius: '8px', border: '1px solid var(--panel-border)', padding: '0 10px' }} 
+                    />
                   </div>
                 </>
               )}
@@ -664,7 +790,11 @@ export default function SchoolManagementView() {
 
               <div className="modal-actions" style={{ marginTop: '10px' }}>
                 <button type="button" onClick={() => setIsModalOpen(false)} className="btn-secondary">Cancelar</button>
-                <button type="submit" className="btn-primary">Guardar</button>
+                <button type="submit" className="btn-primary" data-testid="btn-modal-submit">
+                  {isEditing 
+                    ? (activeTab === 'profesores' ? 'Actualizar Docente' : 'Actualizar') 
+                    : (activeTab === 'profesores' ? 'Guardar Docente' : 'Guardar')}
+                </button>
               </div>
             </form>
           </div>
