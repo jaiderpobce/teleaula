@@ -9,40 +9,43 @@
 ## ESPECIFICACIONES TÉCNICAS, MODELADO RELACIONAL CON RBAC Y DESARROLLO DE DASHBOARDS ANALÍTICOS
 ### CASO DE ESTUDIO OFICIAL: PLATAFORMA INTEGRAL TELEAULA
 
-**Autor del Instructivo:** Prof. Mg. Jaider Ponce (Ingeniero en Informática, Magíster & Docente Universitario)  
-**Cátedra:** Base de Datos & Desarrollo Web — PNF en Informática UNERMB  
+**Proyecto & Desarrollo:** Equipo de Proyecto Teleaula (Estudiantes del PNF en Informática — UNERMB)  
+**Orientación & Guía Metodológica:** Prof. Mg. Jaider Ponce (Docente Facilitador de la Cátedra de Base de Datos & Desarrollo Web)  
+**Instructivo Base:** Elaborado a través del instructivo técnico y marco metodológico facilitado como guía por el Prof. Mg. Jaider Ponce  
 **Documento Oficial en PDF:** [INSTRUCTIVO_TECNICO_TELEAULA.pdf](file:///home/jaiderponce/Documentos/proyectos/teleaula/INSTRUCTIVO_TECNICO_TELEAULA.pdf)
 
 ---
 
 ## ★ PROPÓSITO TÉCNICO Y ALCANCE METODOLÓGICO
 
-Este instructivo elaborado por el **Prof. Mg. Jaider Ponce** establece el marco metodológico para el diseño de bases de datos relacionales empresariales y académicas. Los estudiantes deben entender que el núcleo del proyecto es resolver la problemática real de la institución educativa modelando sus entidades de negocio (alumnos, docentes, materias, secciones, cargas académicas, actividades y calificaciones), mientras que el subsistema RBAC es la infraestructura transversal de seguridad que gobierna el acceso en la aplicación.
+El presente instructivo técnico ha sido elaborado por el **Equipo de Proyecto Teleaula** a través de la guía e instructivo técnico facilitado por el **Prof. Mg. Jaider Ponce** para el diseño de bases de datos relacionales empresariales y académicas. Establece que el núcleo del proyecto es resolver la gestión operativa del dominio institucional (alumnos, docentes, materias, secciones, cargas académicas, actividades evaluativas y calificaciones), mientras que el subsistema RBAC es la infraestructura transversal de seguridad que gobierna el acceso en la aplicación.
 
 ---
 
 ## SECCIÓN 1. DETERMINACIÓN DE ENTIDADES, MODELADO RELACIONAL Y NORMALIZACIÓN
 
-El modelo E-R del proyecto **Teleaula** integra dos dimensiones complementarias: las entidades operativas del dominio escolar/académico (`teleaula_db`) y el subsistema de seguridad y privilegios jerárquicos (`teleaula_rbac`):
+El modelo E-R del proyecto **Teleaula** integra dos dimensiones complementarias: el dominio operativo escolar completo (`teleaula_db`) y el subsistema oficial de seguridad y privilegios jerárquicos (`teleaula_rbac`):
 
 ### 1.1 Coexistencia de Esquemas Relacionales
 
 ```
-+------------------------------------------+        +------------------------------------------+
-|      DOMINIO ACADÉMICO (teleaula_db)     |        |   SUBSISTEMA SEGURIDAD (teleaula_rbac)   |
-+------------------------------------------+        +------------------------------------------+
-|  alumno (id, cedula, nombre, correo)    |        |  usuario (id, documento, email, pass)    |
-|  profesor (id, cedula, nombre, espec)   |<-------+  rol (id, nombre_rol, descripcion)       |
-|  materia (id, nombre_materia)            |   |    |  modulo (id, nombre_modulo, icono)       |
-|  seccion (id, nombre_seccion)            |   |    |  vistas (id, id_modulo, nombre, ruta)    |
-|  r_s_p (id, id_seccion, id_prof, id_mat) |   |    |  permisos (id, nombre_permiso)           |
-|  actividad (id, id_r_s_p, nombre, fecha) |   |    |  r_usuario_rol (id, usuario_id, rol_id)  |
-|  recursos (id, id_actividad, ubicacion)  |   |    |  r_modulo_rol (id, rol_id, modulo_id)    |
-|  notas (id, id_actividad, id_alumno, nota)   |    |  vistas_permiso (id, r_modulo_rol, vista)|
-+------------------------------------------+        |  auditoria_logs (id, usuario_id, accion) |
-                       ^                            +------------------------------------------+
-                       |                                                 |
-                       +====== Vínculo Transversal: documento = cedula =+
++-------------------------------------------------+        +-------------------------------------------------+
+| DOMINIO OPERATIVO Y CASO DE ESTUDIO (teleaula_db)|        |  SUBSISTEMA DE SEGURIDAD Y CONTROL (teleaula_rbac) |
++-------------------------------------------------+        +-------------------------------------------------+
+|  profesor (id, cedula, nombre_comp, especialidad)  |        |  usuario (id, nombre, email, password_hash, act)|
+|  materia  (id, codigo_materia, nombre, creditos)|        |  rol (id, nombre_rol, descripcion)              |
+|  seccion  (id, numero_seccion, capacidad)       |        |  modulo (id, nombre_modulo, icono)              |
+|  periodo  (id, nombre_periodo, fecha_inicio,fin)|        |  auditoria_logs (id, usuario_id, accion, tabla) |
+|                                                 |        |  r_usuario_rol (id, usuario_id, rol_id)         |
+|  r_s_p (id, id_prof, id_mat, id_sec, semestre)  |        |  r_modulo_rol (id, rol_id, modulo_id)           |
+|  inscripcion (id, id_alumno, id_seccion, period)|        |  vistas (id, nombre_vista, ruta_acceso)         |
+|                                                 |        |  permisos (id, nombre_permiso)                  |
+|  actividad (id, id_r_s_p, nombre, fecha, max)   |        |  vistas_permiso (id, r_mod_rol, vista, permiso) |
+|  alumno (id, cedula, nombre_comp, correo)       |        +-------------------------------------------------+
+|  recursos (id, id_actividades, tiporec, ubicac) |                                 ^
+|  notas (id, id_alumno, id_actividad, calif)     |<================================+
++-------------------------------------------------+     opera (1:N) [cedula = documento]
+```
 ```
 
 ### 1.2 Reglas Metodológicas de Integridad
@@ -217,4 +220,4 @@ Metodología oficial de 6 pasos para la exposición ante el jurado calificador:
 6. **Paso 6: Matriz de Pruebas y Validación:** Demostrar ante el jurado los resultados de las pruebas diagnósticas de integridad referencial, transaccionalidad ACID y prevención de inyección SQL.
 
 > *"En la ingeniería informática, una base de datos bien modelada resuelve los procesos vitales de la institución educativa, mientras que un sistema RBAC robusto protege su integridad y gobierna su acceso."*  
-> **— Prof. Mg. Jaider Ponce**
+> **— Principio metodológico facilitado en la cátedra por el Prof. Mg. Jaider Ponce (Docente UNERMB)**
