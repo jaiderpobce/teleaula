@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Guía de Ingeniería de Software & Bases de Datos — Teleaula</title>
+<style>
+  @page {
+    size: A4 portrait;
+    margin: 14mm 14mm 16mm 14mm;
+    @bottom-left {
+      content: "UNERMB — PNF Informática | Prof. Mg. Jaider Ponce";
+      font-family: 'Liberation Sans', 'DejaVu Sans', Arial, sans-serif;
+      font-size: 8pt;
+      color: #64748b;
+      border-top: 1px solid #cbd5e1;
+      padding-top: 5px;
+    }
+    @bottom-right {
+      content: "Página " counter(page);
+      font-family: 'Liberation Sans', 'DejaVu Sans', Arial, sans-serif;
+      font-size: 8pt;
+      font-weight: bold;
+      color: #0d7363;
+      border-top: 1px solid #cbd5e1;
+      padding-top: 5px;
+    }
+  }
+
+  body {
+    font-family: 'Liberation Sans', 'DejaVu Sans', Arial, sans-serif;
+    color: #202124;
+    line-height: 1.4;
+    font-size: 9pt;
+    margin: 0;
+    padding: 0;
+  }
+
+  .page {
+    page-break-after: always;
+    page-break-inside: avoid;
+    position: relative;
+    box-sizing: border-box;
+  }
+
+  .last-page {
+    page-break-after: avoid;
+  }
+
+  /* ==================== PORTADA (PÁGINA 1) ==================== */
+  .portada-header {
+    text-align: center;
+    border-bottom: 2.5pt solid #0d7363;
+    padding-bottom: 12px;
+    margin-bottom: 30px;
+  }
+
+  .portada-header h2 {
+    font-size: 10pt;
+    font-weight: 800;
+    margin: 2px 0;
+    color: #202124;
+    letter-spacing: 0.5px;
+  }
+
+  .portada-header h3 {
+    font-size: 9.5pt;
+    font-weight: 700;
+    margin: 2px 0;
+    color: #0d7363;
+  }
+
+  .portada-badge-container {
+    text-align: center;
+    margin: 25px 0 15px 0;
+  }
+
+  .portada-badge {
+    display: inline-block;
+    background: #0d7363;
+    color: #ffffff;
+    font-size: 8.5pt;
+    font-weight: 800;
+    letter-spacing: 1px;
+    padding: 6px 18px;
+    border-radius: 12px;
+    text-transform: uppercase;
+  }
+
+  .portada-title {
+    text-align: center;
+    font-size: 19pt;
+    font-weight: 900;
+    color: #0b2545;
+    line-height: 1.25;
+    margin: 15px 20px 25px 20px;
+    letter-spacing: -0.3px;
+  }
+
+  .portada-svg-container {
+    text-align: center;
+    margin: 20px 0;
+  }
+
+  .portada-summary {
+    text-align: center;
+    color: #444746;
+    font-size: 10pt;
+    line-height: 1.5;
+    max-width: 90%;
+    margin: 25px auto 40px auto;
+  }
+
+  .portada-footer-cards {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    margin-top: 50px;
+  }
+
+  .info-card {
+    flex: 1;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-left: 4pt solid #0d7363;
+    padding: 14px 18px;
+    border-radius: 6px;
+  }
+
+  .info-card-label {
+    font-size: 7.5pt;
+    font-weight: 800;
+    color: #0d7363;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .info-card-title {
+    font-size: 10.5pt;
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 2px;
+  }
+
+  .info-card-sub {
+    font-size: 8.5pt;
+    color: #64748b;
+  }
+
+  /* ==================== ENCABEZADOS DE SECCIÓN ==================== */
+  .section-banner {
+    background: #f1f5f9;
+    border-left: 3.5pt solid #0ea5e9;
+    padding: 8px 14px;
+    margin-bottom: 14px;
+    border-radius: 4px;
+    font-size: 8.5pt;
+    color: #334155;
+    line-height: 1.4;
+  }
+
+  .section-header {
+    background: #0f172a;
+    color: #ffffff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 14px;
+    border-radius: 6px;
+    margin: 16px 0 12px 0;
+  }
+
+  .section-header-title {
+    font-size: 9.5pt;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+  }
+
+  .section-header-tag {
+    background: #0ea5e9;
+    color: #ffffff;
+    font-size: 7.5pt;
+    font-weight: 800;
+    padding: 3px 10px;
+    border-radius: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .subsection-title {
+    font-size: 10pt;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 14px 0 6px 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .bullet-list {
+    margin: 6px 0 12px 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .bullet-item {
+    position: relative;
+    padding-left: 18px;
+    margin-bottom: 8px;
+    font-size: 8.8pt;
+    color: #334155;
+    line-height: 1.45;
+  }
+
+  .bullet-item::before {
+    content: "•";
+    color: #0d7363;
+    font-size: 14pt;
+    position: absolute;
+    left: 4px;
+    top: -3px;
+  }
+
+  .bullet-highlight {
+    font-weight: 800;
+    color: #0f172a;
+  }
+
+  /* ==================== CAJAS DE CÓDIGO (TERMINALES DARK) ==================== */
+  .code-box {
+    background: #0b1120;
+    border: 1px solid #1e293b;
+    border-radius: 6px;
+    margin: 8px 0;
+    overflow: hidden;
+  }
+
+  .code-header {
+    background: #1e293b;
+    color: #94a3b8;
+    padding: 5px 12px;
+    font-size: 7.2pt;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    font-family: 'Liberation Mono', 'DejaVu Sans Mono', Courier, monospace;
+    border-bottom: 1px solid #334155;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  pre.code-content {
+    margin: 0;
+    padding: 7px 12px;
+    font-family: 'Liberation Mono', 'DejaVu Sans Mono', Courier, monospace;
+    font-size: 6.9pt;
+    line-height: 1.24;
+    color: #e2e8f0;
+    white-space: pre-wrap;
+  }
+
+  /* Colores de Sintaxis SQL */
+  .kwd { color: #f43f5e; font-weight: 700; }  /* CREATE, TABLE, SELECT, INSERT, etc. */
+  .typ { color: #38bdf8; }                    /* INT, VARCHAR, TIMESTAMP */
+  .str { color: #4ade80; }                    /* 'literales' */
+  .com { color: #64748b; font-style: italic; }/* -- comentarios */
+  .fn  { color: #fbbf24; }                    /* COUNT, LAST_INSERT_ID, DATE_FORMAT */
+  .var { color: #c084fc; }                    /* nombres de campos / alias */
+
+  /* ==================== ALERTAS Y CITAS ==================== */
+  .alert-box {
+    background: #fff1f2;
+    border: 1px solid #fecdd3;
+    border-left: 4pt solid #e11d48;
+    padding: 10px 14px;
+    border-radius: 6px;
+    margin: 12px 0;
+    font-size: 8.5pt;
+    color: #881337;
+  }
+
+  .alert-title {
+    font-weight: 800;
+    margin-bottom: 3px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .quote-box {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-left: 4pt solid #16a34a;
+    padding: 12px 18px;
+    border-radius: 8px;
+    margin: 18px 0;
+    font-size: 8.8pt;
+    color: #14532d;
+    font-style: italic;
+  }
+
+  .quote-author {
+    font-style: normal;
+    font-weight: 800;
+    color: #166534;
+  }
+
+  /* ==================== TABLA DIAGNÓSTICA ==================== */
+  table.diag-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+    font-size: 8pt;
+  }
+
+  table.diag-table th {
+    background: #0f172a;
+    color: #ffffff;
+    padding: 8px 10px;
+    text-align: left;
+    font-weight: 800;
+    font-size: 7.8pt;
+    letter-spacing: 0.3px;
+  }
+
+  table.diag-table td {
+    padding: 7px 10px;
+    border-bottom: 1px solid #e2e8f0;
+    color: #334155;
+    vertical-align: middle;
+  }
+
+  table.diag-table tr:nth-child(even) td {
+    background: #f8fafc;
+  }
+
+  .status-passed {
+    background: #dcfce7;
+    color: #166534;
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-weight: 800;
+    font-size: 7.2pt;
+    display: inline-block;
+    border: 1px solid #86efac;
+    text-align: center;
+  }
+
+  /* ==================== CONTENEDORES DE DIAGRAMAS ==================== */
+  .diagram-frame {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 12px;
+    margin: 10px 0 6px 0;
+    text-align: center;
+  }
+
+  .figure-caption {
+    font-size: 7.6pt;
+    font-style: italic;
+    color: #64748b;
+    text-align: center;
+    margin-bottom: 14px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ========================================================
+     PÁGINA 1: PORTADA OFICIAL ACADÉMICA
+    ======================================================== -->
+<div class="page">
+  <div class="portada-header">
+    <h2>REPÚBLICA BOLIVARIANA DE VENEZUELA</h2>
+    <h2>MINISTERIO DEL PODER POPULAR PARA LA EDUCACIÓN UNIVERSITARIA</h2>
+    <h3>UNIVERSIDAD NACIONAL EXPERIMENTAL "RAFAEL MARÍA BARALT" (UNERMB)</h3>
+    <h3>PROGRAMA NACIONAL DE FORMACIÓN (PNF) EN INFORMÁTICA</h3>
+  </div>
+
+  <div class="portada-badge-container">
+    <span class="portada-badge">GUÍA DE INGENIERÍA DE SOFTWARE & BASES DE DATOS</span>
+  </div>
+
+  <h1 class="portada-title">
+    ESPECIFICACIONES TÉCNICAS, MODELADO RELACIONAL CON RBAC Y DESARROLLO DE PLATAFORMAS EDUCATIVAS DIGITALES
+  </h1>
+
+  <!-- ILUSTRACIÓN VECTORIAL SVG: 3D CLOUD DATABASE & ANALYTICS DASHBOARD -->
+  <div class="portada-svg-container">
+    <svg width="420" height="240" viewBox="0 0 500 280" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="gradBg" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#0a192f"/>
+          <stop offset="100%" stop-color="#0f3460"/>
+        </linearGradient>
+        <linearGradient id="cyanGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#00f2fe"/>
+          <stop offset="100%" stop-color="#4facfe"/>
+        </linearGradient>
+        <linearGradient id="greenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#43e97b"/>
+          <stop offset="100%" stop-color="#38f9d7"/>
+        </linearGradient>
+        <linearGradient id="panelGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#1e293b"/>
+          <stop offset="100%" stop-color="#0f172a"/>
+        </linearGradient>
+      </defs>
+
+      <!-- Fondo oscuro tecnológico -->
+      <rect x="10" y="10" width="480" height="260" rx="18" fill="url(#gradBg)" stroke="#1e3a8a" stroke-width="2"/>
+
+      <!-- Rejilla de perspectiva isométrica -->
+      <path d="M 50 230 L 250 260 L 450 230 M 250 260 L 250 170" stroke="#1e293b" stroke-width="1.5" stroke-dasharray="4"/>
+
+      <!-- Cilindros Base de Datos 1 (teleaula_db) -->
+      <g transform="translate(60, 70)">
+        <!-- Disco superior -->
+        <ellipse cx="60" cy="40" rx="45" ry="18" fill="url(#cyanGrad)" opacity="0.9"/>
+        <path d="M 15 40 v 28 c 0 10 20 18 45 18 s 45 -8 45 -18 v -28 Z" fill="#0284c7" opacity="0.8"/>
+        <ellipse cx="60" cy="68" rx="45" ry="16" fill="url(#cyanGrad)" opacity="0.6"/>
+        <path d="M 15 68 v 28 c 0 10 20 18 45 18 s 45 -8 45 -18 v -28 Z" fill="#0369a1" opacity="0.8"/>
+        <ellipse cx="60" cy="96" rx="45" ry="16" fill="url(#cyanGrad)" opacity="0.4"/>
+        <path d="M 15 96 v 28 c 0 10 20 18 45 18 s 45 -8 45 -18 v -28 Z" fill="#075985" opacity="0.8"/>
+        <text x="60" y="44" fill="#ffffff" font-size="10" font-weight="bold" text-anchor="middle">teleaula_db</text>
+        <text x="60" y="145" fill="#7dd3fc" font-size="8" font-weight="bold" text-anchor="middle">GESTIÓN ACADÉMICA</text>
+      </g>
+
+      <!-- Cilindros Base de Datos 2 (teleaula_rbac) -->
+      <g transform="translate(190, 110)">
+        <ellipse cx="60" cy="30" rx="40" ry="15" fill="url(#greenGrad)" opacity="0.9"/>
+        <path d="M 20 30 v 24 c 0 8 18 15 40 15 s 40 -7 40 -15 v -24 Z" fill="#059669" opacity="0.8"/>
+        <ellipse cx="60" cy="54" rx="40" ry="14" fill="url(#greenGrad)" opacity="0.6"/>
+        <path d="M 20 54 v 24 c 0 8 18 15 40 15 s 40 -7 40 -15 v -24 Z" fill="#047857" opacity="0.8"/>
+        <text x="60" y="34" fill="#064e3b" font-size="9" font-weight="bold" text-anchor="middle">teleaula_rbac</text>
+        <text x="60" y="100" fill="#6ee7b7" font-size="8" font-weight="bold" text-anchor="middle">SEGURIDAD & ROLES</text>
+      </g>
+
+      <!-- Dashboard Analítico Frontend Flotante -->
+      <g transform="translate(300, 45)">
+        <rect x="0" y="0" width="165" height="135" rx="10" fill="url(#panelGrad)" stroke="#38bdf8" stroke-width="1.8"/>
+        <!-- Barra de título de la ventana -->
+        <rect x="0" y="0" width="165" height="18" rx="10" fill="#1e293b"/>
+        <circle cx="12" cy="9" r="3" fill="#ef4444"/>
+        <circle cx="22" cy="9" r="3" fill="#eab308"/>
+        <circle cx="32" cy="9" r="3" fill="#22c55e"/>
+        <text x="82" y="12" fill="#94a3b8" font-size="7" font-weight="bold" text-anchor="middle">Teleaula Dashboard</text>
+
+        <!-- Mini tarjetas KPI -->
+        <rect x="10" y="26" width="68" height="24" rx="4" fill="#0f172a" stroke="#334155"/>
+        <text x="16" y="36" fill="#94a3b8" font-size="5.5">Alumnos</text>
+        <text x="16" y="46" fill="#38bdf8" font-size="8" font-weight="bold">1,420</text>
+
+        <rect x="86" y="26" width="68" height="24" rx="4" fill="#0f172a" stroke="#334155"/>
+        <text x="92" y="36" fill="#94a3b8" font-size="5.5">Tareas PDF</text>
+        <text x="92" y="46" fill="#4ade80" font-size="8" font-weight="bold">384</text>
+
+        <!-- Gráfico de barras -->
+        <rect x="15" y="105" width="12" height="-35" fill="#38bdf8" rx="2"/>
+        <rect x="35" y="105" width="12" height="-50" fill="#0ea5e9" rx="2"/>
+        <rect x="55" y="105" width="12" height="-28" fill="#4ade80" rx="2"/>
+        <rect x="75" y="105" width="12" height="-45" fill="#22c55e" rx="2"/>
+        <rect x="95" y="105" width="12" height="-60" fill="#a855f7" rx="2"/>
+        <rect x="115" y="105" width="12" height="-38" fill="#ec4899" rx="2"/>
+        <rect x="135" y="105" width="12" height="-52" fill="#f59e0b" rx="2"/>
+        <line x1="10" y1="107" x2="155" y2="107" stroke="#475569" stroke-width="1"/>
+
+        <!-- Indicador de conexión segura -->
+        <rect x="10" y="115" width="144" height="12" rx="3" fill="#14532d"/>
+        <text x="82" y="123" fill="#86efac" font-size="6" font-weight="bold" text-anchor="middle">🛡️ RBAC JWT TOKEN VALIDADO</text>
+      </g>
+
+      <!-- Rayos / Conectores de datos -->
+      <path d="M 150 110 Q 230 70 300 90" fill="none" stroke="#38bdf8" stroke-width="2" stroke-dasharray="6,4"/>
+      <path d="M 270 145 Q 310 170 350 160" fill="none" stroke="#4ade80" stroke-width="2" stroke-dasharray="6,4"/>
+    </svg>
+  </div>
+
+  <p class="portada-summary">
+    Instructivo metodológico de determinación de entidades de negocio, persistencia relacional multibase de datos (MariaDB / MySQL), seguridad RBAC jerárquica de 3 niveles y desarrollo de tableros analíticos para estudiantes del PNF en Informática. Caso de Estudio: Plataforma Integral <strong>Teleaula</strong>.
+  </p>
+
+  <div class="portada-footer-cards">
+    <div class="info-card">
+      <div class="info-card-label">Autor del Instructivo</div>
+      <div class="info-card-title">Prof. Mg. Jaider Ponce</div>
+      <div class="info-card-sub">Ingeniero en Informática, Magíster & Docente Universitario</div>
+    </div>
+    <div class="info-card">
+      <div class="info-card-label">Área Académica & Aplicación</div>
+      <div class="info-card-title">Cátedra de Base de Datos & Desarrollo Web</div>
+      <div class="info-card-sub">PNF en Informática — UNERMB</div>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================================
+     PÁGINA 2: SECCIÓN 1 (MODELADO E-R Y NORMALIZACIÓN)
+    ======================================================== -->
+<div class="page">
+  <div class="section-banner">
+    <strong>★ PROPÓSITO TÉCNICO Y ALCANCE METODOLÓGICO:</strong><br>
+    Este instructivo elaborado por el <strong>Prof. Mg. Jaider Ponce</strong> establece el marco metodológico para el diseño de bases de datos relacionales empresariales y académicas. Los estudiantes deben entender que el núcleo del proyecto es resolver la problemática real de la institución educativa modelando sus entidades de negocio (alumnos, docentes, materias, secciones, cargas, actividades y notas), mientras que el subsistema RBAC es la infraestructura transversal de seguridad que gobierna el acceso en la aplicación.
+  </div>
+
+  <div class="section-header">
+    <span class="section-header-title">SECCIÓN 1. DETERMINACIÓN DE ENTIDADES, MODELADO RELACIONAL Y NORMALIZACIÓN</span>
+    <span class="section-header-tag">Negocio + RBAC</span>
+  </div>
+
+  <p style="margin: 6px 0 10px 0; font-size: 8.8pt;">
+    El modelo E-R del proyecto <strong>Teleaula</strong> integra dos dimensiones complementarias: las entidades operativas del dominio escolar/académico (<code>teleaula_db</code>) y el subsistema de seguridad y privilegios jerárquicos (<code>teleaula_rbac</code>):
+  </p>
+
+  <!-- DIAGRAMA E-R DE COEXISTENCIA GLOBAL -->
+  <div class="diagram-frame">
+    <svg width="100%" height="240" viewBox="0 0 680 240" xmlns="http://www.w3.org/2000/svg">
+      <!-- Contenedor Izquierdo: Dominio Académico (Verde) -->
+      <rect x="10" y="10" width="310" height="220" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+      <rect x="10" y="10" width="310" height="24" rx="8" fill="#16a34a"/>
+      <text x="165" y="26" fill="#ffffff" font-size="8" font-weight="bold" text-anchor="middle">DOMINIO ACADÉMICO / CASO DE ESTUDIO (teleaula_db)</text>
+
+      <!-- Tabla Alumno -->
+      <rect x="25" y="42" width="125" height="58" rx="4" fill="#ffffff" stroke="#22c55e"/>
+      <rect x="25" y="42" width="125" height="15" fill="#22c55e"/>
+      <text x="87" y="53" fill="#ffffff" font-size="7" font-weight="bold" text-anchor="middle">alumno</text>
+      <text x="30" y="68" fill="#15803d" font-size="6">PK  id (INT)</text>
+      <text x="30" y="78" fill="#334155" font-size="6">    cedula, nombre_comp</text>
+      <text x="30" y="88" fill="#334155" font-size="6">    correo, telefono</text>
+
+      <!-- Tabla Profesor -->
+      <rect x="175" y="42" width="130" height="58" rx="4" fill="#ffffff" stroke="#22c55e"/>
+      <rect x="175" y="42" width="130" height="15" fill="#22c55e"/>
+      <text x="240" y="53" fill="#ffffff" font-size="7" font-weight="bold" text-anchor="middle">profesor</text>
+      <text x="180" y="68" fill="#15803d" font-size="6">PK  id (INT)</text>
+      <text x="180" y="78" fill="#334155" font-size="6">    cedula, nombre_comp</text>
+      <text x="180" y="88" fill="#334155" font-size="6">    especialidad</text>
+
+      <!-- Tabla R_S_P (Carga Docente) -->
+      <rect x="100" y="112" width="135" height="50" rx="4" fill="#ffffff" stroke="#16a34a"/>
+      <rect x="100" y="112" width="135" height="14" fill="#16a34a"/>
+      <text x="167" y="122" fill="#ffffff" font-size="7" font-weight="bold" text-anchor="middle">r_s_p (Carga Académica)</text>
+      <text x="105" y="136" fill="#15803d" font-size="6">PK  id (INT)</text>
+      <text x="105" y="146" fill="#0284c7" font-size="6">FK  id_seccion, id_materia</text>
+      <text x="105" y="156" fill="#0284c7" font-size="6">FK  id_profesor, semestre</text>
+
+      <!-- Tabla Actividad / Recursos -->
+      <rect x="25" y="174" width="125" height="46" rx="4" fill="#ffffff" stroke="#22c55e"/>
+      <rect x="25" y="174" width="125" height="14" fill="#22c55e"/>
+      <text x="87" y="184" fill="#ffffff" font-size="6.8" font-weight="bold" text-anchor="middle">actividad & tareas</text>
+      <text x="30" y="198" fill="#15803d" font-size="6">PK  id (INT)</text>
+      <text x="30" y="208" fill="#0284c7" font-size="6">FK  id_r_s_p, id_status</text>
+
+      <rect x="175" y="174" width="130" height="46" rx="4" fill="#ffffff" stroke="#22c55e"/>
+      <rect x="175" y="174" width="130" height="14" fill="#22c55e"/>
+      <text x="240" y="184" fill="#ffffff" font-size="6.8" font-weight="bold" text-anchor="middle">recursos (PDFs)</text>
+      <text x="180" y="198" fill="#15803d" font-size="6">PK  id (INT)</text>
+      <text x="180" y="208" fill="#0284c7" font-size="6">FK  id_actividades, ubicacion</text>
+
+      <!-- Contenedor Derecho: Subsistema RBAC (Azul) -->
+      <rect x="360" y="10" width="310" height="220" rx="8" fill="#f0f9ff" stroke="#0284c7" stroke-width="1.5"/>
+      <rect x="360" y="10" width="310" height="24" rx="8" fill="#0284c7"/>
+      <text x="515" y="26" fill="#ffffff" font-size="8" font-weight="bold" text-anchor="middle">SUBSISTEMA SEGURIDAD RBAC (teleaula_rbac)</text>
+
+      <!-- Tabla Usuario -->
+      <rect x="375" y="42" width="125" height="58" rx="4" fill="#ffffff" stroke="#0ea5e9"/>
+      <rect x="375" y="42" width="125" height="15" fill="#0ea5e9"/>
+      <text x="437" y="53" fill="#ffffff" font-size="7" font-weight="bold" text-anchor="middle">usuario</text>
+      <text x="380" y="68" fill="#0369a1" font-size="6">PK  id (INT)</text>
+      <text x="380" y="78" fill="#334155" font-size="6">    documento, email</text>
+      <text x="380" y="88" fill="#334155" font-size="6">    password_hash, activo</text>
+
+      <!-- Tabla Rol -->
+      <rect x="525" y="42" width="130" height="58" rx="4" fill="#ffffff" stroke="#0ea5e9"/>
+      <rect x="525" y="42" width="130" height="15" fill="#0ea5e9"/>
+      <text x="590" y="53" fill="#ffffff" font-size="7" font-weight="bold" text-anchor="middle">rol</text>
+      <text x="530" y="68" fill="#0369a1" font-size="6">PK  id (INT)</text>
+      <text x="530" y="78" fill="#334155" font-size="6">    nombre_rol (SUPERADMIN..)</text>
+      <text x="530" y="88" fill="#334155" font-size="6">    descripcion</text>
+
+      <!-- Tabla Vistas & Permisos -->
+      <rect x="375" y="112" width="130" height="52" rx="4" fill="#ffffff" stroke="#0284c7"/>
+      <rect x="375" y="112" width="130" height="14" fill="#0284c7"/>
+      <text x="440" y="122" fill="#ffffff" font-size="7" font-weight="bold" text-anchor="middle">vistas (Pantallas)</text>
+      <text x="380" y="136" fill="#0369a1" font-size="6">PK  id (INT)</text>
+      <text x="380" y="146" fill="#0284c7" font-size="6">FK  id_modulo, ruta_acceso</text>
+      <text x="380" y="156" fill="#334155" font-size="6">    nombre_vista, icono</text>
+
+      <rect x="525" y="112" width="130" height="52" rx="4" fill="#ffffff" stroke="#0284c7"/>
+      <rect x="525" y="112" width="130" height="14" fill="#0284c7"/>
+      <text x="590" y="122" fill="#ffffff" font-size="7" font-weight="bold" text-anchor="middle">vistas_permiso</text>
+      <text x="530" y="136" fill="#0369a1" font-size="6">PK  id (INT)</text>
+      <text x="530" y="146" fill="#0284c7" font-size="6">FK  r_modulo_rol_id</text>
+      <text x="530" y="156" fill="#0284c7" font-size="6">FK  vista_id, permiso_id</text>
+
+      <!-- Tabla Auditoria Logs -->
+      <rect x="440" y="176" width="160" height="44" rx="4" fill="#ffffff" stroke="#0ea5e9"/>
+      <rect x="440" y="176" width="160" height="14" fill="#0ea5e9"/>
+      <text x="520" y="186" fill="#ffffff" font-size="6.8" font-weight="bold" text-anchor="middle">auditoria_logs</text>
+      <text x="445" y="200" fill="#0369a1" font-size="6">PK  id (INT)  |  FK usuario_id</text>
+      <text x="445" y="210" fill="#334155" font-size="6">    accion, tabla_afectada, fecha_hora</text>
+
+      <!-- Vínculo transversal (Línea roja discontinua entre dominios) -->
+      <path d="M 150 71 C 280 40, 290 71, 375 71" fill="none" stroke="#e11d48" stroke-width="2" stroke-dasharray="5,4"/>
+      <rect x="235" y="55" width="85" height="15" rx="3" fill="#ffe4e6" stroke="#f43f5e"/>
+      <text x="277" y="66" fill="#be123c" font-size="6" font-weight="bold" text-anchor="middle">documento = cedula</text>
+    </svg>
+  </div>
+  <div class="figure-caption">
+    Figura 1.1: Diagrama Entidad-Relación Global: Coexistencia del Dominio de Negocio Académico (Verde) y el Subsistema de Seguridad RBAC Jerárquico (Azul) vinculado transversalmente en Teleaula.
+  </div>
+
+  <div class="subsection-title">1.1 Metodología de Determinación de Entidades y Reglas de Integridad</div>
+  <ul class="bullet-list">
+    <li class="bullet-item">
+      <span class="bullet-highlight">Extracción de Entidades del Negocio:</span> Identificación formal a partir del caso escolar de los objetos transaccionales que resuelven los procesos de la institución (ej. <code>alumno</code>, <code>profesor</code>, <code>materia</code>, <code>seccion</code>, <code>r_s_p</code>, <code>actividad</code>, <code>recursos</code>, <code>notas</code>).
+    </li>
+    <li class="bullet-item">
+      <span class="bullet-highlight">El Rol Transversal del RBAC:</span> El RBAC no almacena calificaciones ni duplica datos; actúa como la gobernanza de seguridad de la aplicación para determinar quién opera el sistema (enlazado mediante <code>usuario.documento = profesor.cedula / alumno.cedula</code> y <code>auditoria_logs.usuario_id ➔ usuario.id</code>).
+    </li>
+    <li class="bullet-item">
+      <span class="bullet-highlight">Normalización Estricta (1FN a 3FN):</span> Cumplimiento de atomicidad total (1FN), dependencia funcional completa de la clave primaria (2FN) y eliminación rigurosa de dependencias transitivas mediante tablas de catálogos (3FN).
+    </li>
+    <li class="bullet-item">
+      <span class="bullet-highlight">Convención de Claves:</span> Clave primaria nombrada estrictamente <code>id</code> de tipo entero autoincremental. Claves foráneas nombradas bajo el estándar <code>[tabla]_id</code> o <code>id_[entidad]</code> con restricciones de integridad referencial activas.
+    </li>
+  </ul>
+</div>
+
+<!-- ========================================================
+     PÁGINA 3: SECCIÓN 2 (SUBSISTEMA OBLIGATORIO RBAC)
+    ======================================================== -->
+<div class="page">
+  <div class="section-header">
+    <span class="section-header-title">SECCIÓN 2. SUBSISTEMA OBLIGATORIO RBAC JERÁRQUICO POR MÓDULOS Y VISTAS</span>
+    <span class="section-header-tag">Seguridad en Datos</span>
+  </div>
+
+  <p style="margin: 4px 0 8px 0; font-size: 8.5pt;">
+    La seguridad del proyecto <strong>debe residir estructurada en el motor de base de datos</strong> y no únicamente en el frontend. Se exige implementar el modelo de control de acceso jerárquico de tres niveles: <strong>Módulo ➔ Vista (Pantalla) ➔ Permiso/Acción</strong>:
+  </p>
+
+  <div class="code-box">
+    <div class="code-header">
+      <span>SCRIPT SQL DDL — ESQUEMA RELACIONAL RBAC JERÁRQUICO (MARIADB / MYSQL)</span>
+      <span>teleaula_rbac.sql</span>
+    </div>
+    <pre class="code-content"><span class="com">-- 1. Catálogos Base de Seguridad (Entidades Maestras con PK = id)</span>
+<span class="kwd">CREATE TABLE</span> <span class="var">usuario</span> (
+  <span class="var">id</span> <span class="typ">INT AUTO_INCREMENT PRIMARY KEY</span>, <span class="var">nombre</span> <span class="typ">VARCHAR</span>(100) <span class="kwd">NOT NULL</span>,
+  <span class="var">documento</span> <span class="typ">VARCHAR</span>(20) <span class="kwd">NOT NULL UNIQUE</span>, <span class="var">email</span> <span class="typ">VARCHAR</span>(120) <span class="kwd">NOT NULL UNIQUE</span>,
+  <span class="var">password_hash</span> <span class="typ">VARCHAR</span>(255) <span class="kwd">NOT NULL</span>, <span class="var">activo</span> <span class="typ">BOOLEAN DEFAULT TRUE</span>,
+  <span class="var">fecha_creacion</span> <span class="typ">TIMESTAMP DEFAULT CURRENT_TIMESTAMP</span>
+) <span class="kwd">ENGINE</span>=InnoDB;
+
+<span class="kwd">CREATE TABLE</span> <span class="var">rol</span> (
+  <span class="var">id</span> <span class="typ">INT AUTO_INCREMENT PRIMARY KEY</span>, <span class="var">nombre_rol</span> <span class="typ">VARCHAR</span>(50) <span class="kwd">NOT NULL UNIQUE</span>,
+  <span class="var">descripcion</span> <span class="typ">VARCHAR</span>(255) <span class="kwd">NOT NULL</span> <span class="com">-- SUPERADMIN, DIRECTOR, PROFESOR, ESTUDIANTE</span>
+) <span class="kwd">ENGINE</span>=InnoDB;
+
+<span class="kwd">CREATE TABLE</span> <span class="var">modulo</span> (
+  <span class="var">id</span> <span class="typ">INT AUTO_INCREMENT PRIMARY KEY</span>, <span class="var">nombre_modulo</span> <span class="typ">VARCHAR</span>(60) <span class="kwd">NOT NULL UNIQUE</span>,
+  <span class="var">descripcion</span> <span class="typ">VARCHAR</span>(255), <span class="var">icono</span> <span class="typ">VARCHAR</span>(50), <span class="var">orden</span> <span class="typ">INT DEFAULT</span> 1
+) <span class="kwd">ENGINE</span>=InnoDB;
+
+<span class="kwd">CREATE TABLE</span> <span class="var">vistas</span> (
+  <span class="var">id</span> <span class="typ">INT AUTO_INCREMENT PRIMARY KEY</span>, <span class="var">id_modulo</span> <span class="typ">INT NOT NULL</span>,
+  <span class="var">nombre_vista</span> <span class="typ">VARCHAR</span>(80) <span class="kwd">NOT NULL</span>, <span class="var">ruta_acceso</span> <span class="typ">VARCHAR</span>(120) <span class="kwd">NOT NULL UNIQUE</span>,
+  <span class="var">icono</span> <span class="typ">VARCHAR</span>(50), <span class="var">activo</span> <span class="typ">BOOLEAN DEFAULT TRUE</span>,
+  <span class="kwd">FOREIGN KEY</span> (<span class="var">id_modulo</span>) <span class="kwd">REFERENCES</span> <span class="var">modulo</span>(<span class="var">id</span>) <span class="kwd">ON DELETE CASCADE</span>
+) <span class="kwd">ENGINE</span>=InnoDB;
+
+<span class="kwd">CREATE TABLE</span> <span class="var">permisos</span> (
+  <span class="var">id</span> <span class="typ">INT AUTO_INCREMENT PRIMARY KEY</span>, <span class="var">nombre_permiso</span> <span class="typ">VARCHAR</span>(50) <span class="kwd">NOT NULL UNIQUE</span>,
+  <span class="var">descripcion</span> <span class="typ">VARCHAR</span>(255) <span class="kwd">NOT NULL</span> <span class="com">-- LEER, CREAR, EDITAR, ELIMINAR, EVALUAR</span>
+) <span class="kwd">ENGINE</span>=InnoDB;
+
+<span class="com">-- 2. Tablas Intermedias: r_usuario_rol y r_modulo_rol (PK = id)</span>
+<span class="kwd">CREATE TABLE</span> <span class="var">r_usuario_rol</span> (
+  <span class="var">id</span> <span class="typ">INT AUTO_INCREMENT PRIMARY KEY</span>,
+  <span class="var">usuario_id</span> <span class="typ">INT NOT NULL</span>, <span class="var">rol_id</span> <span class="typ">INT NOT NULL</span>,
+  <span class="var">fecha_asignacion</span> <span class="typ">TIMESTAMP DEFAULT CURRENT_TIMESTAMP</span>,
+  <span class="kwd">UNIQUE</span> (<span class="var">usuario_id</span>, <span class="var">rol_id</span>),
+  <span class="kwd">FOREIGN KEY</span> (<span class="var">usuario_id</span>) <span class="kwd">REFERENCES</span> <span class="var">usuario</span>(<span class="var">id</span>) <span class="kwd">ON DELETE CASCADE</span>,
+  <span class="kwd">FOREIGN KEY</span> (<span class="var">rol_id</span>) <span class="kwd">REFERENCES</span> <span class="var">rol</span>(<span class="var">id</span>) <span class="kwd">ON DELETE RESTRICT</span>
+) <span class="kwd">ENGINE</span>=InnoDB;
+
+<span class="kwd">CREATE TABLE</span> <span class="var">r_modulo_rol</span> (
+  <span class="var">id</span> <span class="typ">INT AUTO_INCREMENT PRIMARY KEY</span>,
+  <span class="var">rol_id</span> <span class="typ">INT NOT NULL</span>, <span class="var">modulo_id</span> <span class="typ">INT NOT NULL</span>,
+  <span class="var">habilitado</span> <span class="typ">BOOLEAN DEFAULT TRUE</span>,
+  <span class="kwd">UNIQUE</span> (<span class="var">rol_id</span>, <span class="var">modulo_id</span>),
+  <span class="kwd">FOREIGN KEY</span> (<span class="var">rol_id</span>) <span class="kwd">REFERENCES</span> <span class="var">rol</span>(<span class="var">id</span>) <span class="kwd">ON DELETE CASCADE</span>,
+  <span class="kwd">FOREIGN KEY</span> (<span class="var">modulo_id</span>) <span class="kwd">REFERENCES</span> <span class="var">modulo</span>(<span class="var">id</span>) <span class="kwd">ON DELETE RESTRICT</span>
+) <span class="kwd">ENGINE</span>=InnoDB;
+
+<span class="com">-- 3. Autorización Granular en vistas_permiso y Trazabilidad de Auditoría</span>
+<span class="kwd">CREATE TABLE</span> <span class="var">vistas_permiso</span> (
+  <span class="var">id</span> <span class="typ">INT AUTO_INCREMENT PRIMARY KEY</span>,
+  <span class="var">r_modulo_rol_id</span> <span class="typ">INT NOT NULL</span> <span class="kwd">REFERENCES</span> <span class="var">r_modulo_rol</span>(<span class="var">id</span>) <span class="kwd">ON DELETE CASCADE</span>,
+  <span class="var">vista_id</span> <span class="typ">INT NOT NULL</span> <span class="kwd">REFERENCES</span> <span class="var">vistas</span>(<span class="var">id</span>) <span class="kwd">ON DELETE CASCADE</span>,
+  <span class="var">permiso_id</span> <span class="typ">INT NOT NULL</span> <span class="kwd">REFERENCES</span> <span class="var">permisos</span>(<span class="var">id</span>) <span class="kwd">ON DELETE CASCADE</span>,
+  <span class="var">permitido</span> <span class="typ">BOOLEAN DEFAULT TRUE</span>, <span class="kwd">UNIQUE</span> (<span class="var">r_modulo_rol_id</span>, <span class="var">vista_id</span>, <span class="var">permiso_id</span>)
+) <span class="kwd">ENGINE</span>=InnoDB;
+
+<span class="kwd">CREATE TABLE</span> <span class="var">auditoria_logs</span> (
+  <span class="var">id</span> <span class="typ">INT AUTO_INCREMENT PRIMARY KEY</span>, <span class="var">usuario_id</span> <span class="typ">INT</span> <span class="kwd">REFERENCES</span> <span class="var">usuario</span>(<span class="var">id</span>) <span class="kwd">ON DELETE SET NULL</span>,
+  <span class="var">accion</span> <span class="typ">VARCHAR</span>(100) <span class="kwd">NOT NULL</span>, <span class="var">tabla_afectada</span> <span class="typ">VARCHAR</span>(60) <span class="kwd">NOT NULL</span>,
+  <span class="var">registro_id</span> <span class="typ">INT</span>, <span class="var">fecha_hora</span> <span class="typ">TIMESTAMP DEFAULT CURRENT_TIMESTAMP</span>
+) <span class="kwd">ENGINE</span>=InnoDB;</pre>
+  </div>
+</div>
+
+<!-- ========================================================
+     PÁGINA 4: SECCIÓN 3 (TRANSACCIONES ACID Y CONSULTAS)
+    ======================================================== -->
+<div class="page">
+  <div class="section-header">
+    <span class="section-header-title">SECCIÓN 3. PERSISTENCIA ROBUSTA, TRANSACCIONES ACID Y VISTAS</span>
+    <span class="section-header-tag">Motor SQL Avanzado</span>
+  </div>
+
+  <p style="margin: 4px 0 8px 0; font-size: 8.5pt;">
+    El motor relacional debe garantizar la integridad física y lógica de las transacciones académicas articuladas con el registro de auditoría de seguridad:
+  </p>
+
+  <ul class="bullet-list">
+    <li class="bullet-item">
+      <span class="bullet-highlight">Transacciones Multi-Tabla ACID:</span> Operaciones compuestas cerradas con <code>START TRANSACTION</code> y <code>COMMIT</code> o <code>ROLLBACK</code> ante cualquier fallo de validación o clave foránea:
+    </li>
+  </ul>
+
+  <div class="code-box">
+    <div class="code-header">
+      <span>TRANSACCIÓN MULTI-TABLA DE NEGOCIO Y CONSULTA DE AUTORIZACIÓN RBAC</span>
+      <span>teleaula_transacciones.sql</span>
+    </div>
+    <pre class="code-content"><span class="com">-- 1. Transacción del Negocio: Crear actividad escolar, registrar guía PDF y asentar auditoría</span>
+<span class="kwd">START TRANSACTION</span>;
+
+<span class="com">-- Paso A: Insertar la actividad evaluativa ligada a la Carga Académica (id_r_s_p = 2)</span>
+<span class="kwd">INSERT INTO</span> teleaula_db.actividad (<span class="var">id_r_s_p</span>, <span class="var">nombre_actividad</span>, <span class="var">fecha_entrega</span>, <span class="var">puntuacion_max</span>, <span class="var">id_status</span>)
+<span class="kwd">VALUES</span> (2, <span class="str">'Taller Práctico: Modelado Entidad-Relación'</span>, <span class="str">'2026-11-30'</span>, 20.00, 1);
+
+<span class="com">-- Paso B: Capturar ID autogenerado de la actividad</span>
+<span class="kwd">SET</span> <span class="var">@nueva_actividad_id</span> = <span class="fn">LAST_INSERT_ID</span>();
+
+<span class="com">-- Paso C: Vincular el documento digital (PDF subido de hasta 64MB)</span>
+<span class="kwd">INSERT INTO</span> teleaula_db.recursos (<span class="var">id_tiporecurso</span>, <span class="var">tiporecurso</span>, <span class="var">ubicacion</span>, <span class="var">id_actividades</span>)
+<span class="kwd">VALUES</span> (1, <span class="str">'Guía: Taller Modelado E-R'</span>, <span class="str">'/uploads/guia_taller_er_2026.pdf'</span>, <span class="var">@nueva_actividad_id</span>);
+
+<span class="com">-- Paso D: Asentar la traza de auditoría en teleaula_rbac</span>
+<span class="kwd">INSERT INTO</span> teleaula_rbac.auditoria_logs (<span class="var">usuario_id</span>, <span class="var">accion</span>, <span class="var">tabla_afectada</span>, <span class="var">registro_id</span>)
+<span class="kwd">VALUES</span> (3, <span class="str">'PUBLICAR_ACTIVIDAD_CON_GUIA'</span>, <span class="str">'actividad'</span>, <span class="var">@nueva_actividad_id</span>);
+
+<span class="kwd">COMMIT</span>;
+
+<span class="com">-- 2. Validación de Seguridad RBAC en Backend: ¿Usuario (id=3) tiene permiso 'CREAR' en '/escolar/profesores'?</span>
+<span class="kwd">SELECT</span> <span class="fn">COUNT</span>(*) > 0 <span class="kwd">AS</span> <span class="var">autorizado</span>
+<span class="kwd">FROM</span> teleaula_rbac.usuario u
+<span class="kwd">JOIN</span> teleaula_rbac.r_usuario_rol ur <span class="kwd">ON</span> u.id = ur.usuario_id
+<span class="kwd">JOIN</span> teleaula_rbac.r_modulo_rol mr <span class="kwd">ON</span> ur.rol_id = mr.rol_id
+<span class="kwd">JOIN</span> teleaula_rbac.vistas_permiso vp <span class="kwd">ON</span> mr.id = vp.r_modulo_rol_id
+<span class="kwd">JOIN</span> teleaula_rbac.vistas v <span class="kwd">ON</span> vp.vista_id = v.id
+<span class="kwd">JOIN</span> teleaula_rbac.permisos p <span class="kwd">ON</span> vp.permiso_id = p.id
+<span class="kwd">WHERE</span> u.id = 3 
+  <span class="kwd">AND</span> v.ruta_acceso = <span class="str">'/escolar/profesores'</span> 
+  <span class="kwd">AND</span> p.nombre_permiso = <span class="str">'CREAR'</span>
+  <span class="kwd">AND</span> mr.habilitado = <span class="kwd">TRUE</span> 
+  <span class="kwd">AND</span> vp.permitido = <span class="kwd">TRUE</span>;</pre>
+  </div>
+
+  <div class="alert-box">
+    <div class="alert-title">⚠️ REGLA DE ORO DE SEGURIDAD CONTRA INYECCIÓN SQL</div>
+    Queda estrictamente prohibida la concatenación directa de cadenas de texto en las consultas SQL del backend. Toda interacción con MariaDB desde Spring Boot debe realizarse mediante <strong>Consultas Preparadas (Prepared Statements con Parámetros Bind)</strong> utilizando <code>JdbcTemplate</code> o repositorios JPA para neutralizar vectores de ataque por inyección SQL.
+  </div>
+</div>
+
+<!-- ========================================================
+     PÁGINA 5: SECCIÓN 4 & SECCIÓN 5 (ARQUITECTURA & MATRIZ)
+    ======================================================== -->
+<div class="page">
+  <div class="section-header">
+    <span class="section-header-title">SECCIÓN 4. ARQUITECTURA DEL DASHBOARD ANALÍTICO Y CONTROL POR ROL</span>
+    <span class="section-header-tag">Fullstack & RBAC</span>
+  </div>
+
+  <!-- DIAGRAMA DE ARQUITECTURA EN 3 CAPAS -->
+  <div class="diagram-frame">
+    <svg width="100%" height="150" viewBox="0 0 650 150" xmlns="http://www.w3.org/2000/svg">
+      <!-- Capa 1: Frontend -->
+      <rect x="20" y="10" width="460" height="36" rx="6" fill="#f8fafc" stroke="#3b82f6" stroke-width="1.2"/>
+      <rect x="20" y="10" width="460" height="12" rx="6" fill="#3b82f6"/>
+      <text x="250" y="19" fill="#ffffff" font-size="6.5" font-weight="bold" text-anchor="middle">Capa 1: Frontend React 18 + Vite (SPA en Nginx - Puerto 3008)</text>
+      <text x="40" y="36" fill="#1e293b" font-size="6.5">Landing Page Institucional</text>
+      <text x="180" y="36" fill="#1e293b" font-size="6.5">Sidebar Dashboard RBAC</text>
+      <text x="340" y="36" fill="#1e293b" font-size="6.5">Modales Interactivos</text>
+
+      <!-- Roles -->
+      <g transform="translate(510, 10)">
+        <rect x="0" y="0" width="120" height="130" rx="6" fill="#f1f5f9" stroke="#cbd5e1"/>
+        <text x="60" y="15" fill="#0f172a" font-size="7" font-weight="bold" text-anchor="middle">Perfiles RBAC</text>
+        <rect x="10" y="24" width="100" height="20" rx="4" fill="#dbeafe"/>
+        <text x="60" y="37" fill="#1d4ed8" font-size="6.5" font-weight="bold" text-anchor="middle">SuperAdmin</text>
+        <rect x="10" y="49" width="100" height="20" rx="4" fill="#e0e7ff"/>
+        <text x="60" y="62" fill="#4338ca" font-size="6.5" font-weight="bold" text-anchor="middle">Director</text>
+        <rect x="10" y="74" width="100" height="20" rx="4" fill="#dcfce7"/>
+        <text x="60" y="87" fill="#15803d" font-size="6.5" font-weight="bold" text-anchor="middle">Docente</text>
+        <rect x="10" y="99" width="100" height="20" rx="4" fill="#fef9c3"/>
+        <text x="60" y="112" fill="#854d0e" font-size="6.5" font-weight="bold" text-anchor="middle">Estudiante</text>
+      </g>
+
+      <!-- Conector 1 a 2 -->
+      <line x1="250" y1="46" x2="250" y2="57" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+      <text x="285" y="53" fill="#64748b" font-size="5.5">Peticiones REST / JSON / FormData</text>
+
+      <!-- Capa 2: Backend -->
+      <rect x="20" y="58" width="460" height="36" rx="6" fill="#f8fafc" stroke="#10b981" stroke-width="1.2"/>
+      <rect x="20" y="58" width="460" height="12" rx="6" fill="#10b981"/>
+      <text x="250" y="67" fill="#ffffff" font-size="6.5" font-weight="bold" text-anchor="middle">Capa 2: Backend Spring Boot (Eclipse Temurin JRE 25 - Puerto 8083)</text>
+      <text x="35" y="84" fill="#1e293b" font-size="6.5">Controladores Auth & RBAC</text>
+      <text x="180" y="84" fill="#1e293b" font-size="6.5">Classroom & Academic API</text>
+      <text x="340" y="84" fill="#1e293b" font-size="6.5">Upload Service (64 MB)</text>
+
+      <!-- Conector 2 a 3 -->
+      <line x1="250" y1="94" x2="250" y2="105" stroke="#64748b" stroke-width="1.5"/>
+      <text x="285" y="101" fill="#64748b" font-size="5.5">Dual DataSource HikariCP</text>
+
+      <!-- Capa 3: Base de Datos -->
+      <rect x="20" y="106" width="460" height="36" rx="6" fill="#f8fafc" stroke="#6366f1" stroke-width="1.2"/>
+      <rect x="20" y="106" width="460" height="12" rx="6" fill="#6366f1"/>
+      <text x="250" y="115" fill="#ffffff" font-size="6.5" font-weight="bold" text-anchor="middle">Capa 3: Motor de Base de Datos MariaDB 10.11 (Puerto 3318)</text>
+      <text x="50" y="132" fill="#1e293b" font-size="6.5">teleaula_rbac (Seguridad)</text>
+      <text x="200" y="132" fill="#1e293b" font-size="6.5">teleaula_db (Gestión Escolar)</text>
+      <text x="360" y="132" fill="#1e293b" font-size="6.5">Transacciones ACID</text>
+    </svg>
+  </div>
+  <div class="figure-caption">
+    Figura 4.1: Arquitectura Fullstack en 3 Capas conectando el Tablero Analítico y Aula Virtual con el Motor Relacional mediante Middleware RBAC en Teleaula.
+  </div>
+
+  <div class="section-header">
+    <span class="section-header-title">SECCIÓN 5. MATRIZ DE PRUEBAS DE VALIDACIÓN Y SEGURIDAD RBAC</span>
+    <span class="section-header-tag">Matriz Diagnóstica</span>
+  </div>
+
+  <p style="margin: 4px 0 8px 0; font-size: 8.5pt;">
+    Todo proyecto debe someterse a una batería diagnóstica para verificar la integridad referencial y el control jerárquico:
+  </p>
+
+  <table class="diag-table">
+    <thead>
+      <tr>
+        <th style="width: 11%;">ID TEST</th>
+        <th style="width: 22%;">COMPONENTE EVALUADO</th>
+        <th style="width: 25%;">ACCIÓN EJECUTADA</th>
+        <th style="width: 22%;">RESULTADO ESPERADO</th>
+        <th style="width: 12%;">REGLA TÉCNICA</th>
+        <th style="width: 8%; text-align: center;">ESTADO</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>TEST-01</strong></td>
+        <td>Integridad Referencial</td>
+        <td>Intento de borrar un rol asignado a usuarios en <code>r_usuario_rol</code></td>
+        <td>Operación bloqueada por clave foránea</td>
+        <td>Restricción <code>ON DELETE RESTRICT</code></td>
+        <td style="text-align: center;"><span class="status-passed">PASÓ</span></td>
+      </tr>
+      <tr>
+        <td><strong>TEST-02</strong></td>
+        <td>Atomicidad ACID</td>
+        <td>Fallo simulado a mitad de una transacción de carga de notas</td>
+        <td>Reversión completa de datos modificados</td>
+        <td>Bloque <code>ROLLBACK</code> automático</td>
+        <td style="text-align: center;"><span class="status-passed">PASÓ</span></td>
+      </tr>
+      <tr>
+        <td><strong>TEST-03</strong></td>
+        <td>Acceso a Módulo</td>
+        <td>Estudiante intenta abrir módulo de configuración RBAC</td>
+        <td>Menú oculto y bloqueo de ruta HTTP 403</td>
+        <td>Verificación en <code>r_modulo_rol</code></td>
+        <td style="text-align: center;"><span class="status-passed">PASÓ</span></td>
+      </tr>
+      <tr>
+        <td><strong>TEST-04</strong></td>
+        <td>Acción en Vista</td>
+        <td>Usuario sin permiso intenta pulsar botón de edición</td>
+        <td>Botón deshabilitado y API rechaza la petición</td>
+        <td>Validación en <code>vistas_permiso</code></td>
+        <td style="text-align: center;"><span class="status-passed">PASÓ</span></td>
+      </tr>
+      <tr>
+        <td><strong>TEST-05</strong></td>
+        <td>Inyección SQL</td>
+        <td>Inyección maliciosa <code>' OR '1'='1</code> en login o búsqueda</td>
+        <td>Tratamiento como texto literal (Rechazado)</td>
+        <td>Consultas Preparadas (Prepared Stmts)</td>
+        <td style="text-align: center;"><span class="status-passed">PASÓ</span></td>
+      </tr>
+      <tr>
+        <td><strong>TEST-06</strong></td>
+        <td>Auditoría Activa</td>
+        <td>Actualización o eliminación de registro de actividad escolar</td>
+        <td>Creación automática de traza de auditoría</td>
+        <td>Registro en tabla <code>auditoria_logs</code></td>
+        <td style="text-align: center;"><span class="status-passed">PASÓ</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ========================================================
+     PÁGINA 6: SECCIÓN 6 (METODOLOGÍA DE PRESENTACIÓN)
+    ======================================================== -->
+<div class="page last-page">
+  <div class="section-header">
+    <span class="section-header-title">SECCIÓN 6. ESTRUCTURA RECOMENDADA PARA LA PRESENTACIÓN Y DEFENSA</span>
+    <span class="section-header-tag">Metodología de Exposición</span>
+  </div>
+
+  <p style="margin: 4px 0 8px 0; font-size: 8.5pt;">
+    Para exponer con excelencia académica el proyecto ante el jurado, el equipo expositor debe seguir una estructura clara en <strong>6 pasos fundamentales</strong>:
+  </p>
+
+  <!-- INFOGRAFÍA VECTORIAL DE LOS 6 PASOS -->
+  <div class="diagram-frame">
+    <svg width="100%" height="150" viewBox="0 0 650 150" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <filter id="shadowBox" x="-10%" y="-10%" width="120%" height="120%">
+          <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000000" flood-opacity="0.1"/>
+        </filter>
+      </defs>
+
+      <!-- Paso 1 -->
+      <g transform="translate(15, 15)" filter="url(#shadowBox)">
+        <rect x="0" y="0" width="95" height="120" rx="8" fill="#ffffff" stroke="#0ea5e9" stroke-width="1.5"/>
+        <rect x="0" y="0" width="95" height="24" rx="8" fill="#0ea5e9"/>
+        <text x="47" y="16" fill="#ffffff" font-size="9" font-weight="bold" text-anchor="middle">1. Requisitos</text>
+        <circle cx="47" cy="48" r="15" fill="#e0f2fe"/>
+        <text x="47" y="53" fill="#0284c7" font-size="11" font-weight="bold" text-anchor="middle">01</text>
+        <text x="47" y="78" fill="#0f172a" font-size="7" font-weight="bold" text-anchor="middle">Caso de Estudio</text>
+        <text x="47" y="88" fill="#64748b" font-size="6" text-anchor="middle">Determinación</text>
+        <text x="47" y="97" fill="#64748b" font-size="6" text-anchor="middle">de Entidades</text>
+      </g>
+
+      <!-- Flecha 1-2 -->
+      <path d="M 115 75 L 122 75" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+
+      <!-- Paso 2 -->
+      <g transform="translate(122, 15)" filter="url(#shadowBox)">
+        <rect x="0" y="0" width="95" height="120" rx="8" fill="#ffffff" stroke="#10b981" stroke-width="1.5"/>
+        <rect x="0" y="0" width="95" height="24" rx="8" fill="#10b981"/>
+        <text x="47" y="16" fill="#ffffff" font-size="9" font-weight="bold" text-anchor="middle">2. Modelo E-R</text>
+        <circle cx="47" cy="48" r="15" fill="#d1fae5"/>
+        <text x="47" y="53" fill="#059669" font-size="11" font-weight="bold" text-anchor="middle">02</text>
+        <text x="47" y="78" fill="#0f172a" font-size="7" font-weight="bold" text-anchor="middle">Normalización</text>
+        <text x="47" y="88" fill="#64748b" font-size="6" text-anchor="middle">1FN a 3FN</text>
+        <text x="47" y="97" fill="#64748b" font-size="6" text-anchor="middle">teleaula_db</text>
+      </g>
+
+      <!-- Flecha 2-3 -->
+      <path d="M 222 75 L 229 75" stroke="#94a3b8" stroke-width="2"/>
+
+      <!-- Paso 3 -->
+      <g transform="translate(229, 15)" filter="url(#shadowBox)">
+        <rect x="0" y="0" width="95" height="120" rx="8" fill="#ffffff" stroke="#6366f1" stroke-width="1.5"/>
+        <rect x="0" y="0" width="95" height="24" rx="8" fill="#6366f1"/>
+        <text x="47" y="16" fill="#ffffff" font-size="9" font-weight="bold" text-anchor="middle">3. RBAC</text>
+        <circle cx="47" cy="48" r="15" fill="#e0e7ff"/>
+        <text x="47" y="53" fill="#4f46e5" font-size="11" font-weight="bold" text-anchor="middle">03</text>
+        <text x="47" y="78" fill="#0f172a" font-size="7" font-weight="bold" text-anchor="middle">Seguridad</text>
+        <text x="47" y="88" fill="#64748b" font-size="6" text-anchor="middle">Jerárquica</text>
+        <text x="47" y="97" fill="#64748b" font-size="6" text-anchor="middle">teleaula_rbac</text>
+      </g>
+
+      <!-- Flecha 3-4 -->
+      <path d="M 329 75 L 336 75" stroke="#94a3b8" stroke-width="2"/>
+
+      <!-- Paso 4 -->
+      <g transform="translate(336, 15)" filter="url(#shadowBox)">
+        <rect x="0" y="0" width="95" height="120" rx="8" fill="#ffffff" stroke="#f59e0b" stroke-width="1.5"/>
+        <rect x="0" y="0" width="95" height="24" rx="8" fill="#f59e0b"/>
+        <text x="47" y="16" fill="#ffffff" font-size="9" font-weight="bold" text-anchor="middle">4. Motor SQL</text>
+        <circle cx="47" cy="48" r="15" fill="#fef3c7"/>
+        <text x="47" y="53" fill="#d97706" font-size="11" font-weight="bold" text-anchor="middle">04</text>
+        <text x="47" y="78" fill="#0f172a" font-size="7" font-weight="bold" text-anchor="middle">Transacciones</text>
+        <text x="47" y="88" fill="#64748b" font-size="6" text-anchor="middle">ACID y Carga</text>
+        <text x="47" y="97" fill="#64748b" font-size="6" text-anchor="middle">Guías de 64MB</text>
+      </g>
+
+      <!-- Flecha 4-5 -->
+      <path d="M 436 75 L 443 75" stroke="#94a3b8" stroke-width="2"/>
+
+      <!-- Paso 5 -->
+      <g transform="translate(443, 15)" filter="url(#shadowBox)">
+        <rect x="0" y="0" width="95" height="120" rx="8" fill="#ffffff" stroke="#ec4899" stroke-width="1.5"/>
+        <rect x="0" y="0" width="95" height="24" rx="8" fill="#ec4899"/>
+        <text x="47" y="16" fill="#ffffff" font-size="9" font-weight="bold" text-anchor="middle">5. Demo Vivo</text>
+        <circle cx="47" cy="48" r="15" fill="#fce7f3"/>
+        <text x="47" y="53" fill="#db2777" font-size="11" font-weight="bold" text-anchor="middle">05</text>
+        <text x="47" y="78" fill="#0f172a" font-size="7" font-weight="bold" text-anchor="middle">Dashboard</text>
+        <text x="47" y="88" fill="#64748b" font-size="6" text-anchor="middle">Landing, Login</text>
+        <text x="47" y="97" fill="#64748b" font-size="6" text-anchor="middle">& Aula Virtual</text>
+      </g>
+
+      <!-- Flecha 5-6 -->
+      <path d="M 543 75 L 550 75" stroke="#94a3b8" stroke-width="2"/>
+
+      <!-- Paso 6 -->
+      <g transform="translate(550, 15)" filter="url(#shadowBox)">
+        <rect x="0" y="0" width="85" height="120" rx="8" fill="#ffffff" stroke="#059669" stroke-width="1.5"/>
+        <rect x="0" y="0" width="85" height="24" rx="8" fill="#059669"/>
+        <text x="42" y="16" fill="#ffffff" font-size="9" font-weight="bold" text-anchor="middle">6. Matriz</text>
+        <circle cx="42" cy="48" r="15" fill="#d1fae5"/>
+        <text x="42" y="53" fill="#059669" font-size="11" font-weight="bold" text-anchor="middle">06</text>
+        <text x="42" y="78" fill="#0f172a" font-size="7" font-weight="bold" text-anchor="middle">Validación</text>
+        <text x="42" y="88" fill="#64748b" font-size="6" text-anchor="middle">Pruebas y</text>
+        <text x="42" y="97" fill="#64748b" font-size="6" text-anchor="middle">Defensa Jurado</text>
+      </g>
+    </svg>
+  </div>
+  <div class="figure-caption">
+    Figura 6.1: Metodología oficial en 6 pasos para la exposición y defensa del Proyecto Teleaula (Prof. Mg. Jaider Ponce).
+  </div>
+
+  <div class="subsection-title">Detalle de Contenido por Paso de la Presentación:</div>
+  <ul class="bullet-list">
+    <li class="bullet-item">
+      <span class="bullet-highlight">1. Caso de Estudio y Determinación de Entidades:</span> Explicar la problemática de la institución escolar y justificar las entidades extraídas del negocio (alumnos, docentes, materias, secciones, cargas académicas e inscripciones).
+    </li>
+    <li class="bullet-item">
+      <span class="bullet-highlight">2. Modelo E-R Global y Normalización 3FN:</span> Demostrar la normalización de las tablas de <code>teleaula_db</code> y cómo coexisten de manera desacoplada con el subsistema de seguridad <code>teleaula_rbac</code>.
+    </li>
+    <li class="bullet-item">
+      <span class="bullet-highlight">3. Arquitectura de Seguridad RBAC Jerárquico:</span> Explicar el desacoplamiento de roles, módulos, vistas y permisos mediante la tabla intermedia <code>vistas_permiso</code>.
+    </li>
+    <li class="bullet-item">
+      <span class="bullet-highlight">4. Motor SQL (DDL, Vistas y Transacciones ACID):</span> Demostrar scripts DDL con claves primarias <code>id</code>, foráneas en cascada y transacciones multi-tabla atómicas para la publicación de tareas con guías PDF de hasta 64MB.
+    </li>
+    <li class="bullet-item">
+      <span class="bullet-highlight">5. Demostración de Dashboard en Vivo:</span> Navegación en la Landing Page pública, acceso al sistema vía botón "Sistema", inicio de sesión con diferentes usuarios (SuperAdmin, Director, Docente, Alumno) evidenciando el cambio dinámico del sidebar, pantallas y modales.
+    </li>
+    <li class="bullet-item">
+      <span class="bullet-highlight">6. Matriz de Pruebas y Validación:</span> Demostrar ante el jurado los resultados de las pruebas diagnósticas de integridad referencial, transaccionalidad ACID y prevención de inyección SQL.
+    </li>
+  </ul>
+
+  <div class="quote-box">
+    "En la ingeniería informática, una base de datos bien modelada resuelve los procesos vitales de la institución educativa, mientras que un sistema RBAC robusto protege su integridad y gobierna su acceso."<br>
+    <span class="quote-author">— Prof. Mg. Jaider Ponce</span>
+  </div>
+</div>
+
+</body>
+</html>
