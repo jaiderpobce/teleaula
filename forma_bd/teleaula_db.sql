@@ -161,9 +161,9 @@ CREATE TABLE `profesor` (
 CREATE TABLE `recursos` (
   `id` int(11) NOT NULL,
   `id_tiporecurso` int(11) NOT NULL,
-  `tiporecurso` varchar(50) NOT NULL,
+  `tiporecurso` varchar(255) NOT NULL,
   `ubicacion` varchar(255) NOT NULL,
-  `id_actividades` int(11) NOT NULL
+  `id_actividades` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------

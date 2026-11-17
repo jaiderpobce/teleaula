@@ -35,7 +35,9 @@ public class ActivityController {
                 m.nombre_materia AS nombreMateria,
                 p.nombre_completo AS nombreProfesor,
                 COUNT(DISTINCT n.id) AS alumnosCalificados,
-                COUNT(DISTINCT r.id) AS totalRecursos
+                COUNT(DISTINCT r.id) AS totalRecursos,
+                MAX(r.ubicacion) AS archivoUrl,
+                MAX(r.tiporecurso) AS archivoNombre
             FROM teleaula_db.actividad act
             JOIN teleaula_db.r_s_p rsp ON rsp.id = act.id_r_s_p
             JOIN teleaula_db.seccion s ON s.id = rsp.id_seccion

@@ -125,9 +125,12 @@ export default function ClassroomView() {
 
       let uploadError = '';
       if (selectedFile) {
+        const actId = res.data?.id || res.data?.data?.id || res.id;
         const formData = new FormData();
         formData.append('file', selectedFile);
-        formData.append('idActividad', res.data.id);
+        if (actId) {
+          formData.append('idActividad', actId.toString());
+        }
         formData.append('idTipoRecurso', '1');
         formData.append('nombreRecurso', `Guía: ${title}`);
 
@@ -137,11 +140,18 @@ export default function ClassroomView() {
             body: formData
           });
           if (!uploadResponse.ok) {
-            const uploadResult = await uploadResponse.json().catch(() => null);
-            throw new Error(uploadResult?.message || `Error HTTP ${uploadResponse.status}`);
+            let errorText = `Error HTTP ${uploadResponse.status}`;
+            try {
+              const uploadResult = await uploadResponse.json();
+              if (uploadResult?.message) errorText = uploadResult.message;
+            } catch {
+              const text = await uploadResponse.text().catch(() => '');
+              if (text.includes('413')) errorText = 'El archivo supera el tamaño máximo permitido por el servidor';
+            }
+            throw new Error(errorText);
           }
         } catch (uploadErr) {
-          uploadError = uploadErr instanceof Error ? uploadErr.message : 'Error desconocido';
+          uploadError = uploadErr instanceof Error ? uploadErr.message : 'Error al subir el archivo adjunto';
         }
       }
 
@@ -557,9 +567,35 @@ export default function ClassroomView() {
                           {act.nombreActividad}
                         </div>
                         {act.totalRecursos > 0 && (
-                          <span style={{ fontSize: '0.72rem', color: 'var(--google-blue)', display: 'inline-flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
-                            📎 Guía PDF adjunta
-                          </span>
+                          <div style={{ marginTop: '4px' }}>
+                            {act.archivoUrl ? (
+                              <a
+                                href={act.archivoUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                onClick={e => e.stopPropagation()}
+                                style={{
+                                  fontSize: '0.74rem',
+                                  color: 'var(--google-blue)',
+                                  textDecoration: 'none',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '4px',
+                                  fontWeight: 700,
+                                  background: '#e8f0fe',
+                                  padding: '3px 8px',
+                                  borderRadius: '6px',
+                                  transition: 'background 0.2s'
+                                }}
+                              >
+                                <span>📎</span> {act.archivoNombre || 'Descargar Guía Adjunta'} ↗
+                              </a>
+                            ) : (
+                              <span style={{ fontSize: '0.72rem', color: 'var(--google-blue)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                📎 Guía PDF adjunta
+                              </span>
+                            )}
+                          </div>
                         )}
                       </td>
                       <td style={{ fontWeight: 700, color: 'var(--google-blue)' }}>{act.nombreMateria}</td>

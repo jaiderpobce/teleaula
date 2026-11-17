@@ -65,7 +65,7 @@ public class ResourceController {
     @Transactional
     public ResponseEntity<?> uploadFile(
             @RequestParam("file") MultipartFile file,
-            @RequestParam(value = "idActividad", defaultValue = "1") Long idActividad,
+            @RequestParam(value = "idActividad", required = false) Long idActividad,
             @RequestParam(value = "idTipoRecurso", defaultValue = "1") Long idTipoRecurso,
             @RequestParam(value = "nombreRecurso", required = false) String nombreRecurso) {
 
@@ -94,10 +94,16 @@ public class ResourceController {
                 ? nombreRecurso.trim() 
                 : (originalFilename != null ? originalFilename : storedFilename);
 
+            if (resourceName.length() > 255) {
+                resourceName = resourceName.substring(0, 255);
+            }
+
+            Long finalActivityId = (idActividad != null && idActividad > 0) ? idActividad : null;
+
             jdbcTemplate.update("""
                 INSERT INTO teleaula_db.recursos (id_tiporecurso, tiporecurso, ubicacion, id_actividades)
                 VALUES (?, ?, ?, ?)
-                """, idTipoRecurso, resourceName, publicUrl, idActividad);
+                """, idTipoRecurso, resourceName, publicUrl, finalActivityId);
 
             Long newId = jdbcTemplate.queryForObject("SELECT LAST_INSERT_ID()", Long.class);
 
